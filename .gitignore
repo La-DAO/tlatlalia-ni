@@ -1,0 +1,7 @@
+# Foundry files
+cache
+out
+packages/protocol/*.txt
+
+# Config files
+.env
