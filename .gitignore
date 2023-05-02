@@ -5,5 +5,9 @@ node_modules
 cache
 out
 
+# Hardhat files
+artifacts
+cache_hardhat
+
 # Config files
 .env
