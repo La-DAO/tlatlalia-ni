@@ -1,7 +1,9 @@
+# node-modules
+node_modules
+
 # Foundry files
 cache
 out
-packages/protocol/*.txt
 
 # Config files
 .env
