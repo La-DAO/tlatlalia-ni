@@ -1,0 +1,10 @@
+{
+  "name": "tlatlalia-ni",
+  "version": "1.0.0",
+  "description": "xocolotal price oracle for mxn-dollar",
+  "main": "index.js",
+  "repository": "https://github.com/La-DAO/tlatlalia-ni",
+  "author": "LaDAO",
+  "license": "GNU AFFERO GENERAL PUBLIC LICENSE",
+  "private": null
+}
