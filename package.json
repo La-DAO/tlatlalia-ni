@@ -6,5 +6,9 @@
   "repository": "https://github.com/La-DAO/tlatlalia-ni",
   "author": "LaDAO",
   "license": "GNU AFFERO GENERAL PUBLIC LICENSE",
-  "private": null
+  "private": null,
+  "devDependencies": {
+    "@nomicfoundation/hardhat-foundry": "^1.0.1",
+    "hardhat": "^2.14.0"
+  }
 }
