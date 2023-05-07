@@ -1,7 +1,11 @@
 /* global describe it before ethers */
 
+const {
+  getSelectors,
+  FacetCutAction
+} = require('../../scripts/hardhat/libraries/diamond.js')
 const { deployDiamond } = require('../../scripts/hardhat/deployDiamond.js')
-const { expect } = require("chai")
+const { expect, assert } = require("chai")
 const { WrapperBuilder } = require("@redstone-finance/evm-connector");
 
 const DEBUG = false
@@ -11,20 +15,42 @@ describe('RedstoneTest', async function () {
   let diamondCutFacet
   let diamondLoupeFacet
   let ownershipFacet
+  let addresses = []
 
   before(async function () {
     diamondAddress = await deployDiamond()
     diamondCutFacet = await ethers.getContractAt('DiamondCutFacet', diamondAddress)
     diamondLoupeFacet = await ethers.getContractAt('DiamondLoupeFacet', diamondAddress)
     ownershipFacet = await ethers.getContractAt('OwnershipFacet', diamondAddress)
+
+    for (const address of await diamondLoupeFacet.facetAddresses()) {
+      addresses.push(address)
+    }
   })
 
-  it('Should be a passing test', async () => {
-    // TODO your test here
-    if (DEBUG) {
-      console.log("diamondAddress",diamondAddress)
+  it('Should add Redstone facet functions', async () => {
+    const RedstoneFacet = await ethers.getContractFactory('RedstoneFacet')
+    const redstoneFacet = await RedstoneFacet.deploy()
+    await redstoneFacet.deployed()
+    addresses.push(redstoneFacet.address)
+
+    const selectors = getSelectors(redstoneFacet)
+
+    let tx = await diamondCutFacet.diamondCut(
+      [{
+        facetAddress: redstoneFacet.address,
+        action: FacetCutAction.Add,
+        functionSelectors: selectors
+      }],
+      ethers.constants.AddressZero, '0x', { gasLimit: 800000 })
+    let receipt = await tx.wait()
+
+    if (!receipt.status) {
+      throw Error(`Diamond upgrade failed: ${tx.hash}`)
     }
-    expect(1).to.equal(1)
+
+    result = await diamondLoupeFacet.facetFunctionSelectors(redstoneFacet.address)
+    assert.sameMembers(result, selectors)
   })
 
 })
