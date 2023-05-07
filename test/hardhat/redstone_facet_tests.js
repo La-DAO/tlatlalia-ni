@@ -2,6 +2,7 @@
 
 const { deployDiamond } = require('../../scripts/hardhat/deployDiamond.js')
 const { expect } = require("chai")
+const { WrapperBuilder } = require("@redstone-finance/evm-connector");
 
 const DEBUG = false
 
