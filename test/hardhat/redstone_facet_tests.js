@@ -8,7 +8,7 @@ const { deployDiamond } = require('../../scripts/hardhat/deployDiamond.js')
 const { expect, assert } = require("chai")
 const { WrapperBuilder } = require("@redstone-finance/evm-connector");
 
-const DEBUG = false
+const DEBUG = true
 
 describe('RedstoneTest', async function () {
   let diamondAddress
@@ -51,6 +51,26 @@ describe('RedstoneTest', async function () {
 
     result = await diamondLoupeFacet.facetFunctionSelectors(redstoneFacet.address)
     assert.sameMembers(result, selectors)
+  })
+
+  it('Should test function call', async () => {
+    const redstoneFacet = await ethers.getContractAt('RedstoneFacet', diamondAddress)
+    const w_redstoneFacet = WrapperBuilder
+                          .wrap(redstoneFacet)
+                          .usingDataService(
+                            {
+                              dataServiceId: "redstone-main-demo",
+                              uniqueSignersCount: 1,
+                              dataFeeds: ["ETH"]
+                            },
+                            ["https://d33trozg86ya9x.cloudfront.net"]
+                          );
+
+    const price = await w_redstoneFacet.getLatestRedstonePrice()
+
+    if (DEBUG) {
+      console.log(price.toString())
+    }
   })
 
 })
