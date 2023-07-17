@@ -1,7 +1,13 @@
+# node-modules
+node_modules
+
 # Foundry files
 cache
 out
-packages/protocol/*.txt
+
+# Hardhat files
+artifacts
+cache_hardhat
 
 # Config files
 .env
