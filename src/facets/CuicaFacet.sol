@@ -4,21 +4,21 @@ pragma solidity 0.8.17;
 import {IAggregatorV3} from "../interfaces/chainlink/IAggregatorV3.sol";
 
 contract CuicaFacet is IAggregatorV3 {
-    function decimals() external view returns (uint8) {
+    function decimals() external pure returns (uint8) {
         return 8;
     }
 
-    function description() external view returns (string memory) {
+    function description() external pure returns (string memory) {
         return "MXN / USD";
     }
 
-    function version() external view returns (uint256) {
+    function version() external pure returns (uint256) {
         return 1;
     }
 
-    function getRoundData(uint80 _roundId)
+    function getRoundData(uint80 /*_roundId*/ )
         external
-        view
+        pure
         returns (uint80 roundId, int256 answer, uint256 startedAt, uint256 updatedAt, uint80 answeredInRound)
     {
         return (0, 0, 0, 0, 0);
@@ -26,7 +26,7 @@ contract CuicaFacet is IAggregatorV3 {
 
     function latestRoundData()
         external
-        view
+        pure
         returns (uint80 roundId, int256 answer, uint256 startedAt, uint256 updatedAt, uint80 answeredInRound)
     {
         return (0, 0, 0, 0, 0);
