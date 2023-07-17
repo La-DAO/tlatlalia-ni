@@ -8,7 +8,7 @@ const { deployDiamond } = require('../../scripts/hardhat/deployDiamond.js')
 const { expect, assert } = require("chai")
 const { WrapperBuilder } = require("@redstone-finance/evm-connector");
 
-const DEBUG = true
+const DEBUG = false
 
 describe('RedstoneTest', async function () {
   let diamondAddress
@@ -61,12 +61,14 @@ describe('RedstoneTest', async function () {
                             {
                               dataServiceId: "redstone-main-demo",
                               uniqueSignersCount: 1,
-                              dataFeeds: ["ETH"]
+                              dataFeeds: ["MXN"]
                             },
                             ["https://d33trozg86ya9x.cloudfront.net"]
                           );
 
-    const price = await w_redstoneFacet.getLatestRedstonePrice()
+    await w_redstoneFacet.store_MXNUSD_Price_Redstone()
+
+    const price = await redstoneFacet.get_MXNUSD_Price_Redstone()
 
     if (DEBUG) {
       console.log(price.toString())
