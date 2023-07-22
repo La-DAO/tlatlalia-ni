@@ -7,6 +7,7 @@ const {
 const { deployDiamond } = require('../../scripts/hardhat/deployDiamond.js')
 const { expect, assert } = require("chai")
 const { WrapperBuilder } = require("@redstone-finance/evm-connector");
+const redstone = require('redstone-api');
 
 const DEBUG = false
 
@@ -56,22 +57,28 @@ describe('RedstoneTest', async function () {
   it('Should test function call', async () => {
     const redstoneFacet = await ethers.getContractAt('RedstoneFacet', diamondAddress)
     const w_redstoneFacet = WrapperBuilder
-                          .wrap(redstoneFacet)
-                          .usingDataService(
-                            {
-                              dataServiceId: "redstone-main-demo",
-                              uniqueSignersCount: 1,
-                              dataFeeds: ["MXN"]
-                            },
-                            ["https://d33trozg86ya9x.cloudfront.net"]
-                          );
+      .wrap(redstoneFacet)
+      .usingDataService(
+        {
+          dataServiceId: "redstone-main-demo",
+          uniqueSignersCount: 1,
+          dataFeeds: ["MXN"]
+        },
+        ["https://d33trozg86ya9x.cloudfront.net"]
+      );
 
     await w_redstoneFacet.storePrice_Redstone()
 
-    const price = await redstoneFacet.getPrice_Redstone()
+    const storedPrice = await redstoneFacet.getPrice_Redstone()
+    const referenceFloatPrice = (await redstone.getPrice("MXN")).value.toFixed(8)
+    const referencePrice = ethers.utils.parseUnits(referenceFloatPrice.toString(), 8);
+
+    expect(storedPrice).to.eq(referencePrice)
 
     if (DEBUG) {
-      console.log(price.toString())
+      console.log('storedPrice', storedPrice.toString())
+      console.log('referencePrice', referencePrice.toString())
+
     }
   })
 
