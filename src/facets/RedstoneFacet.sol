@@ -2,18 +2,14 @@
 pragma solidity 0.8.17;
 
 import {MainConsumerBase} from "../external/redstone/MainConsumerBase.sol";
-
-struct RedstoneFacetStorage {
-    int256 storedLatestPrice;
-    uint256 lastTimestamp;
-}
+import {OracleFacetStorage} from "../libraries/AppStorage.sol";
 
 contract RedstoneFacet is MainConsumerBase {
+    OracleFacetStorage internal _SRedstoneFacet;
+
     bytes32 private constant REDSTONE_TICKER = bytes32("MXN");
 
-    uint8 public constant DECIMALS_REDSTONE = 8;
-
-    RedstoneFacetStorage internal _SRedstoneFacet;
+    uint8 private constant DECIMALS_REDSTONE = 8;
 
     function getPrice_Redstone() public view returns (int256) {
         return _SRedstoneFacet.storedLatestPrice;

@@ -2,25 +2,21 @@
 pragma solidity 0.8.17;
 
 import {IPyth, PythStructs} from "@pythnetwork/pyth-sdk-solidity/IPyth.sol";
-
-struct PythFacetStorage {
-    int256 storedLatestPrice;
-    uint256 lastTimestamp;
-}
+import {OracleFacetStorage} from "../libraries/AppStorage.sol";
 
 contract PythFacet {
+    OracleFacetStorage internal _SPythFacet;
+
     /// custom errors
     error PythFacet_notEnoughFee();
     error PythFacet_priceIsNegative();
 
-    uint8 public constant DECIMALS_PYTH = 8;
+    uint8 private constant DECIMALS_PYTH = 8;
 
     ///@dev Pyth network contract on gnosis chain.
     IPyth private constant PYTH = IPyth(0x2880aB155794e7179c9eE2e38200202908C17B43);
     ///@dev Pyth network PriceId FX.USD/MXN.
     bytes32 private constant PYTH_TICKER = 0xe13b1c1ffb32f34e1be9545583f01ef385fde7f42ee66049d30570dc866b77ca;
-
-    PythFacetStorage internal _SPythFacet;
 
     int256 private constant NEGATIVE_ONE = -1;
 
