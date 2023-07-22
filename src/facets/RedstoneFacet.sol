@@ -2,14 +2,13 @@
 pragma solidity 0.8.17;
 
 import {MainDemoConsumerBase} from "@redstone-finance/evm-connector/contracts/data-services/MainDemoConsumerBase.sol";
-// import {SignatureLib} from "@redstone-finance/evm-connector/contracts/libs/SignatureLib.sol";
-// import {BitmapLib} from "@redstone-finance/evm-connector/contracts/libs/BitmapLib.sol";
 import {OracleFacetStorage} from "../libraries/AppStorage.sol";
-
-// import {console} from "forge-std/console.sol";
 
 contract RedstoneFacet is MainDemoConsumerBase {
     OracleFacetStorage internal _SRedstoneFacet;
+
+    /// events
+    event RedstoneFacePriceStored(uint256 price, uint256 publisherTimestamp);
 
     /// custom errors
     error RedstoneFacet_timestampFromTooLongFuture();
@@ -33,6 +32,8 @@ contract RedstoneFacet is MainDemoConsumerBase {
     function storePrice_Redstone() public {
         _SRedstoneFacet.storedLatestPrice = int256(getOracleNumericValueFromTxMsg(REDSTONE_TICKER));
         _SRedstoneFacet.lastTimestamp = block.timestamp;
+
+        emit RedstoneFacePriceStored(uint256(_SRedstoneFacet.storedLatestPrice), block.timestamp);
     }
 
     function validateTimestamp(uint256 receivedTimestampMilliseconds) public view override {

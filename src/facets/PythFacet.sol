@@ -7,6 +7,9 @@ import {OracleFacetStorage} from "../libraries/AppStorage.sol";
 contract PythFacet {
     OracleFacetStorage internal _SPythFacet;
 
+    // events
+    event PythFacePriceStored(uint256 price, uint256 publisherTimestamp);
+
     /// custom errors
     error PythFacet_notEnoughFee();
     error PythFacet_priceIsNegative();
@@ -51,6 +54,8 @@ contract PythFacet {
 
         _SPythFacet.storedLatestPrice = int256(convertPrice);
         _SPythFacet.lastTimestamp = uint256(structPrice.publishTime);
+
+        emit PythFacePriceStored(convertPrice, uint256(structPrice.publishTime));
     }
 
     function _invertPrice(uint256 givenPrice, uint256 givenDecimals) private pure returns (uint256) {

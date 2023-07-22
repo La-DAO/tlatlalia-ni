@@ -7,6 +7,9 @@ import {OracleFacetStorage} from "../libraries/AppStorage.sol";
 contract ChainlinkFacet {
     OracleFacetStorage internal _SChainlinkFacet;
 
+    /// events
+    event ChainlinkFacePriceStored(uint256 price, uint256 publisherTimestamp);
+
     /// custom errors
     error ChainlinkFacet_lessThanOrZeroAnswer();
     error ChainlinkComputedFeed_noRoundId();
@@ -39,5 +42,7 @@ contract ChainlinkFacet {
 
         _SChainlinkFacet.storedLatestPrice = answer;
         _SChainlinkFacet.lastTimestamp = updatedAt;
+
+        emit ChainlinkFacePriceStored(uint256(answer), updatedAt);
     }
 }
