@@ -66,9 +66,9 @@ describe('RedstoneTest', async function () {
                             ["https://d33trozg86ya9x.cloudfront.net"]
                           );
 
-    await w_redstoneFacet.store_MXNUSD_Price_Redstone()
+    await w_redstoneFacet.storePrice_Redstone()
 
-    const price = await redstoneFacet.get_MXNUSD_Price_Redstone()
+    const price = await redstoneFacet.getPrice_Redstone()
 
     if (DEBUG) {
       console.log(price.toString())
