@@ -10,7 +10,7 @@ const { WrapperBuilder } = require("@redstone-finance/evm-connector")
 const { EvmPriceServiceConnection } = require("@pythnetwork/pyth-evm-js")
 const { ethers } = require('hardhat')
 
-const DEBUG = true
+const DEBUG = false
 
 // https://github.com/pyth-network/pyth-crosschain/tree/main/target_chains/ethereum/sdk/js#price-service-endpoints
 const connection = new EvmPriceServiceConnection(
@@ -73,12 +73,16 @@ describe('PythTests', async function () {
     const updateFee = await pyth.getUpdateFee(priceUpdateData)
     await pythFacet.storePrice_Pyth(priceUpdateData, { value: updateFee })
     const storedPrice = await pythFacet.getPrice_Pyth();
-    const pythAPIPriceFeeds = await connection.getLatestPriceFeeds(priceIds);
+
+    const refResponse = (await connection.getLatestPriceFeeds(priceIds))[0];
+    const referencePrice = Math.trunc((10 ** (8 + refResponse.price.expo * (-1)) / refResponse.price.price))
+
+    expect(storedPrice.toString()).to.eq(referencePrice.toString())
 
     if (DEBUG) {
       console.log("updateFee", updateFee.toString())
-      console.log("pythAPIPriceFeeds", pythAPIPriceFeeds[0].price.price); // Price { conf: '1234', expo: -8, price: '12345678' }
       console.log("storedPrice", storedPrice.toString());
+      console.log("referencePrice", referencePrice.toString()); // Price { conf: '1234', expo: -8, price: '12345678' }
     }
   })
 
