@@ -2,11 +2,9 @@
 pragma solidity 0.8.17;
 
 import {MainDemoConsumerBase} from "@redstone-finance/evm-connector/contracts/data-services/MainDemoConsumerBase.sol";
-import {OracleFacetStorage} from "../libraries/AppStorage.sol";
+import {AppStorage, OracleFacetStorage} from "../libraries/AppStorage.sol";
 
-contract RedstoneFacet is MainDemoConsumerBase {
-    OracleFacetStorage internal _SRedstoneFacet;
-
+contract RedstoneFacet is AppStorage, MainDemoConsumerBase {
     /// events
     event RedstoneFacePriceStored(uint256 price, uint256 publisherTimestamp);
 
@@ -22,18 +20,23 @@ contract RedstoneFacet is MainDemoConsumerBase {
     uint256 private constant LIMIT_TIMESTAMP_DELAY_SECONDS = 5 minutes;
 
     function getPrice_Redstone() public view returns (int256) {
-        return _SRedstoneFacet.storedLatestPrice;
+        OracleFacetStorage storage os = accessOracleStorage(REDSTONE_STORAGE_POSITION);
+        return os.storedLatestPrice;
     }
 
     function getPriceLastUpdate_Redstone() public view returns (uint256) {
-        return _SRedstoneFacet.lastTimestamp;
+        OracleFacetStorage storage os = accessOracleStorage(REDSTONE_STORAGE_POSITION);
+        return os.lastTimestamp;
     }
 
     function storePrice_Redstone() public {
-        _SRedstoneFacet.storedLatestPrice = int256(getOracleNumericValueFromTxMsg(REDSTONE_TICKER));
-        _SRedstoneFacet.lastTimestamp = block.timestamp;
+        OracleFacetStorage storage os = accessOracleStorage(REDSTONE_STORAGE_POSITION);
 
-        emit RedstoneFacePriceStored(uint256(_SRedstoneFacet.storedLatestPrice), block.timestamp);
+        uint256 extractedPrice = getOracleNumericValueFromTxMsg(REDSTONE_TICKER);
+        os.storedLatestPrice = int256(extractedPrice);
+        os.lastTimestamp = block.timestamp;
+
+        emit RedstoneFacePriceStored(extractedPrice, block.timestamp);
     }
 
     function validateTimestamp(uint256 receivedTimestampMilliseconds) public view override {

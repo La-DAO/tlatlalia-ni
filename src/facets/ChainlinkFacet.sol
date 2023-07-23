@@ -2,11 +2,9 @@
 pragma solidity 0.8.17;
 
 import {IAggregatorV3} from "../interfaces/chainlink/IAggregatorV3.sol";
-import {OracleFacetStorage} from "../libraries/AppStorage.sol";
+import {AppStorage, OracleFacetStorage} from "../libraries/AppStorage.sol";
 
-contract ChainlinkFacet {
-    OracleFacetStorage internal _SChainlinkFacet;
-
+contract ChainlinkFacet is AppStorage {
     /// events
     event ChainlinkFacePriceStored(uint256 price, uint256 publisherTimestamp);
 
@@ -25,11 +23,13 @@ contract ChainlinkFacet {
     uint256 private constant CHAINLINK_TIMEOUT = 86400 seconds;
 
     function getPrice_Chainlink() public view returns (int256) {
-        return _SChainlinkFacet.storedLatestPrice;
+        OracleFacetStorage storage os = accessOracleStorage(CHAINLINK_STORAGE_POSITION);
+        return os.storedLatestPrice;
     }
 
     function getPriceLastUpdate_Chainlink() public view returns (uint256) {
-        return _SChainlinkFacet.lastTimestamp;
+        OracleFacetStorage storage os = accessOracleStorage(CHAINLINK_STORAGE_POSITION);
+        return os.lastTimestamp;
     }
 
     function storePrice_Chainlink() public {
@@ -40,8 +40,9 @@ contract ChainlinkFacet {
         if (updatedAt > block.timestamp || updatedAt == 0) revert ChainlinkComputedFeed_noValidUpdateAt();
         if (block.timestamp - updatedAt > CHAINLINK_TIMEOUT) revert ChainlinkComputedFeed_staleFeed();
 
-        _SChainlinkFacet.storedLatestPrice = answer;
-        _SChainlinkFacet.lastTimestamp = updatedAt;
+        OracleFacetStorage storage os = accessOracleStorage(CHAINLINK_STORAGE_POSITION);
+        os.storedLatestPrice = answer;
+        os.lastTimestamp = updatedAt;
 
         emit ChainlinkFacePriceStored(uint256(answer), updatedAt);
     }

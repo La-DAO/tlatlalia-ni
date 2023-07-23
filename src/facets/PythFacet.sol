@@ -2,11 +2,9 @@
 pragma solidity 0.8.17;
 
 import {IPyth, PythStructs} from "@pythnetwork/pyth-sdk-solidity/IPyth.sol";
-import {OracleFacetStorage} from "../libraries/AppStorage.sol";
+import {AppStorage, OracleFacetStorage} from "../libraries/AppStorage.sol";
 
-contract PythFacet {
-    OracleFacetStorage internal _SPythFacet;
-
+contract PythFacet is AppStorage {
     // events
     event PythFacePriceStored(uint256 price, uint256 publisherTimestamp);
 
@@ -24,11 +22,13 @@ contract PythFacet {
     int256 private constant NEGATIVE_ONE = -1;
 
     function getPrice_Pyth() public view returns (int256) {
-        return _SPythFacet.storedLatestPrice;
+        OracleFacetStorage storage os = accessOracleStorage(PYTH_STORAGE_POSITION);
+        return os.storedLatestPrice;
     }
 
     function getPriceLastUpdate_Pyth() public view returns (uint256) {
-        return _SPythFacet.lastTimestamp;
+        OracleFacetStorage storage os = accessOracleStorage(PYTH_STORAGE_POSITION);
+        return os.lastTimestamp;
     }
 
     function getPythUpdateFee(bytes[] calldata priceUpdateData) public view returns (uint256 fee) {
@@ -52,8 +52,10 @@ contract PythFacet {
         uint256 convertPrice =
             _invertPrice(uint256(int256(structPrice.price)), uint256(int256(NEGATIVE_ONE * structPrice.expo)));
 
-        _SPythFacet.storedLatestPrice = int256(convertPrice);
-        _SPythFacet.lastTimestamp = uint256(structPrice.publishTime);
+        OracleFacetStorage storage os = accessOracleStorage(PYTH_STORAGE_POSITION);
+
+        os.storedLatestPrice = int256(convertPrice);
+        os.lastTimestamp = uint256(structPrice.publishTime);
 
         emit PythFacePriceStored(convertPrice, uint256(structPrice.publishTime));
     }
