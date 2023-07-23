@@ -8,9 +8,6 @@ module.exports = {
     localhost: {
       url: "http://localhost:8545/",
       timeout: 2000000,
-    },
-    gnosisFork: {
-      url: "https://rpc.ankr.com/gnosis",
     }
   },
 }
