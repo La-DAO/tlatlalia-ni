@@ -6,14 +6,35 @@ struct OracleFacetStorage {
     uint256 lastTimestamp;
 }
 
+struct RoundData {
+    uint80 roundId;
+    int256 answer;
+    uint256 startedAt;
+    uint256 updatedAt;
+    uint80 answeredInRound;
+}
+
+struct CuicaFacetStorage {
+    mapping(uint80 => RoundData) roundInfo;
+    uint80 lastRound;
+}
+
 contract AppStorage {
     bytes32 constant REDSTONE_STORAGE_POSITION = keccak256("redstone.storage");
     bytes32 constant PYTH_STORAGE_POSITION = keccak256("pyth.storage");
     bytes32 constant CHAINLINK_STORAGE_POSITION = keccak256("chainlink.storage");
+    bytes32 constant CUICA_STORAGE_POSITION = keccak256("cuica.storage");
 
-    function accessOracleStorage(bytes32 slot) internal pure returns (OracleFacetStorage storage os) {
+    function accessOracleStorage(bytes32 position) internal pure returns (OracleFacetStorage storage s) {
         assembly {
-            os.slot := slot
+            s.slot := position
+        }
+    }
+
+    function accessCuicaStorage() internal pure returns (CuicaFacetStorage storage s) {
+        bytes32 position = CUICA_STORAGE_POSITION;
+        assembly {
+            s.slot := position
         }
     }
 }
