@@ -20,13 +20,11 @@ contract RedstoneFacet is AppStorage, MainDemoConsumerBase {
     uint256 private constant LIMIT_TIMESTAMP_DELAY_SECONDS = 5 minutes;
 
     function getPrice_Redstone() public view returns (int256) {
-        OracleFacetStorage storage os = accessOracleStorage(REDSTONE_STORAGE_POSITION);
-        return os.storedLatestPrice;
+        return accessOracleStorage(REDSTONE_STORAGE_POSITION).storedLatestPrice;
     }
 
     function getPriceLastUpdate_Redstone() public view returns (uint256) {
-        OracleFacetStorage storage os = accessOracleStorage(REDSTONE_STORAGE_POSITION);
-        return os.lastTimestamp;
+        return accessOracleStorage(REDSTONE_STORAGE_POSITION).lastTimestamp;
     }
 
     function storePrice_Redstone() public {

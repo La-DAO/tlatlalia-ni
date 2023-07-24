@@ -22,13 +22,11 @@ contract PythFacet is AppStorage {
     int256 private constant NEGATIVE_ONE = -1;
 
     function getPrice_Pyth() public view returns (int256) {
-        OracleFacetStorage storage os = accessOracleStorage(PYTH_STORAGE_POSITION);
-        return os.storedLatestPrice;
+        return accessOracleStorage(PYTH_STORAGE_POSITION).storedLatestPrice;
     }
 
     function getPriceLastUpdate_Pyth() public view returns (uint256) {
-        OracleFacetStorage storage os = accessOracleStorage(PYTH_STORAGE_POSITION);
-        return os.lastTimestamp;
+        return accessOracleStorage(PYTH_STORAGE_POSITION).lastTimestamp;
     }
 
     function getPythUpdateFee(bytes[] calldata priceUpdateData) public view returns (uint256 fee) {

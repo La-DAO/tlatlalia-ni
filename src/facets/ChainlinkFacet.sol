@@ -23,13 +23,11 @@ contract ChainlinkFacet is AppStorage {
     uint256 private constant CHAINLINK_TIMEOUT = 86400 seconds;
 
     function getPrice_Chainlink() public view returns (int256) {
-        OracleFacetStorage storage os = accessOracleStorage(CHAINLINK_STORAGE_POSITION);
-        return os.storedLatestPrice;
+        return accessOracleStorage(CHAINLINK_STORAGE_POSITION).storedLatestPrice;
     }
 
     function getPriceLastUpdate_Chainlink() public view returns (uint256) {
-        OracleFacetStorage storage os = accessOracleStorage(CHAINLINK_STORAGE_POSITION);
-        return os.lastTimestamp;
+        return accessOracleStorage(CHAINLINK_STORAGE_POSITION).lastTimestamp;
     }
 
     function storePrice_Chainlink() public {
