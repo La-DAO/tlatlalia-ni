@@ -41,6 +41,7 @@ contract ChainlinkFacet is AppStorage {
         OracleFacetStorage storage os = accessOracleStorage(CHAINLINK_STORAGE_POSITION);
         os.storedLatestPrice = answer;
         os.lastTimestamp = updatedAt;
+        os.workingTimestamp = block.timestamp;
 
         emit ChainlinkFacePriceStored(uint256(answer), updatedAt);
     }

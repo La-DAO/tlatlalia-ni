@@ -54,6 +54,7 @@ contract PythFacet is AppStorage {
 
         os.storedLatestPrice = int256(convertPrice);
         os.lastTimestamp = uint256(structPrice.publishTime);
+        os.workingTimestamp = block.timestamp;
 
         emit PythFacePriceStored(convertPrice, uint256(structPrice.publishTime));
     }

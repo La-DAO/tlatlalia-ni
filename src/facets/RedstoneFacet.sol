@@ -33,6 +33,7 @@ contract RedstoneFacet is AppStorage, MainDemoConsumerBase {
         uint256 extractedPrice = getOracleNumericValueFromTxMsg(REDSTONE_TICKER);
         os.storedLatestPrice = int256(extractedPrice);
         os.lastTimestamp = block.timestamp;
+        os.workingTimestamp = block.timestamp;
 
         emit RedstoneFacePriceStored(extractedPrice, block.timestamp);
     }
