@@ -10,6 +10,11 @@ import {AppStorage, RoundData, CuicaFacetStorage, OracleFacetStorage} from "../l
 import {console} from "forge-std/console.sol";
 
 contract CuicaFacet is IAggregatorV3, AppStorage {
+    /// Custom Errors
+    error CuicaFacet_aggregateAndPublishRound_notWithinTimeLimit();
+
+    uint256 constant internal WORKING_TIME_GAP_LIMIT = 5 minutes;
+
     function decimals() external pure returns (uint8) {
         return 8;
     }
@@ -56,6 +61,11 @@ contract CuicaFacet is IAggregatorV3, AppStorage {
         OracleFacetStorage storage osr = accessOracleStorage(REDSTONE_STORAGE_POSITION);
         OracleFacetStorage storage osp = accessOracleStorage(PYTH_STORAGE_POSITION);
         OracleFacetStorage storage osc = accessOracleStorage(CHAINLINK_STORAGE_POSITION);
+
+        uint256 timestampLimit = block.timestamp - WORKING_TIME_GAP_LIMIT;
+        if (osr.workingTimestamp < timestampLimit || osp.workingTimestamp < timestampLimit || osc.workingTimestamp < timestampLimit) {
+            revert CuicaFacet_aggregateAndPublishRound_notWithinTimeLimit();
+        }
 
         int256 sum = osr.storedLatestPrice + osp.storedLatestPrice + osc.storedLatestPrice;
         uint256 average = uint256(sum) / 3;
