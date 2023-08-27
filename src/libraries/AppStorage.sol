@@ -4,6 +4,7 @@ pragma solidity 0.8.17;
 struct OracleFacetStorage {
     int256 storedLatestPrice;
     uint256 lastTimestamp;
+    uint256 workingTimestamp;
 }
 
 struct RoundData {
