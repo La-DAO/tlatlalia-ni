@@ -6,7 +6,7 @@ interface IAggregatorV3 {
 
   function description() external view returns (string memory);
 
-  function version() external view returns (uint256);
+  function version() external view returns (string memory);
 
   function latestRoundData()
     external
