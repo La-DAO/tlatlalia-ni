@@ -26,6 +26,7 @@
     "typechain": "^8.1.0"
   },
   "dependencies": {
+    "@connext/sdk": "^2.1.2",
     "@pythnetwork/pyth-evm-js": "^1.20.1",
     "@pythnetwork/pyth-sdk-solidity": "^2.2.1",
     "@redstone-finance/evm-connector": "^0.0.22",
