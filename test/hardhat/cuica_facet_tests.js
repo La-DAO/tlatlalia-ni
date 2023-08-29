@@ -234,7 +234,7 @@ describe('CuicaFacet', async function () {
     if (DEBUG) console.log(response)
   })
 
-  it('Should set-up Connext', async () => {
+  it('Should set-up Connext core address in CuicaFacet', async () => {
     const tx = await cuicaFacet.setConnext(CONNEXT_GNOSIS)
     await tx.wait()
     const response = await cuicaFacet.connext()
@@ -243,7 +243,7 @@ describe('CuicaFacet', async function () {
     if (DEBUG) console.log(response)
   })
 
-  it('Should revert set-up Connext', async () => {
+  it('Should revert set-up Connext core address by not owner in CuicaFacet', async () => {
     await expect(cuicaFacet.connect(accounts[9]).setConnext(CONNEXT_GNOSIS)).to.be.reverted
     if (DEBUG) console.log(response)
   })
