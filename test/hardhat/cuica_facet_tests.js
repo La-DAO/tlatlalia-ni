@@ -12,7 +12,6 @@ const { ethers } = require('hardhat');
 
 const redstone = require('redstone-api');
 
-
 const DEBUG = false
 
 // https://github.com/pyth-network/pyth-crosschain/tree/main/target_chains/ethereum/sdk/js#price-service-endpoints
@@ -20,7 +19,10 @@ const connection = new EvmPriceServiceConnection(
   "https://xc-mainnet.pyth.network"
 );
 
+const CONNEXT_GNOSIS = "0x5bB83e95f63217CDa6aE3D181BA580Ef377D2109"
+
 describe('CuicaFacet', async function () {
+  let accounts
   let diamondAddress
   let diamondCutFacet
   let diamondLoupeFacet
@@ -28,9 +30,11 @@ describe('CuicaFacet', async function () {
   let redstoneFacet
   let pythFacet
   let chainlinkFacet
+  let priceBulletin
   let addresses = []
 
   before(async function () {
+    accounts = await ethers.getSigners()
     diamondAddress = await deployDiamond()
     diamondCutFacet = await ethers.getContractAt('DiamondCutFacet', diamondAddress)
     diamondLoupeFacet = await ethers.getContractAt('DiamondLoupeFacet', diamondAddress)
@@ -138,7 +142,7 @@ describe('CuicaFacet', async function () {
 
     const priceUpdateData = await connection.getPriceFeedsUpdateData(priceIds)
     const updateFee = await pyth.getUpdateFee(priceUpdateData)
-    
+
     tx = await pythFacet.storePrice_Pyth(priceUpdateData, { value: updateFee })
     await tx.wait()
 
@@ -146,6 +150,10 @@ describe('CuicaFacet', async function () {
 
     tx = await chainlinkFacet.storePrice_Chainlink()
     await tx.wait()
+
+    /// Deploy PriceBulletin
+    const PriceBulletin = await ethers.getContractFactory("PriceBulletin")
+    priceBulletin = await PriceBulletin.deploy()
   })
 
   it('Should add Cuica facet functions', async () => {
@@ -216,15 +224,30 @@ describe('CuicaFacet', async function () {
     const tx = await cuicaFacet.aggregateAndPublishRound()
     await tx.wait()
     const response = await cuicaFacet.latestRoundData()
-    
+
     expect(response.roundId).to.eq(1)
     expect(response.answer).to.be.gt(0)
     expect(response.startedAt).to.be.gt(0)
     expect(response.updatedAt).to.be.gt(0)
     expect(response.answeredInRound).to.eq(1)
 
-    if(DEBUG) console.log(response)
+    if (DEBUG) console.log(response)
   })
+
+  it('Should set-up Connext', async () => {
+    const tx = await cuicaFacet.setConnext(CONNEXT_GNOSIS)
+    await tx.wait()
+    const response = await cuicaFacet.connext()
+
+    expect(response).to.eq(CONNEXT_GNOSIS)
+    if (DEBUG) console.log(response)
+  })
+
+  it('Should revert set-up Connext', async () => {
+    await expect(cuicaFacet.connect(accounts[9]).setConnext(CONNEXT_GNOSIS)).to.be.reverted
+    if (DEBUG) console.log(response)
+  })
+
 
 
 })
