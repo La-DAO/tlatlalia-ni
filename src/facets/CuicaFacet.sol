@@ -68,6 +68,11 @@ contract CuicaFacet is IAggregatorV3, BulletinSigning, AppStorage {
     }
   }
 
+  function connext() public view returns(address) {
+    CuicaFacetStorage storage cs = accessCuicaStorage();
+    return cs.connext;
+  }
+
   function aggregateAndPublishRound() external {
     OracleFacetStorage storage osr = accessOracleStorage(REDSTONE_STORAGE_POSITION);
     OracleFacetStorage storage osp = accessOracleStorage(PYTH_STORAGE_POSITION);
