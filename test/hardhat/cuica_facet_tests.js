@@ -245,6 +245,24 @@ describe('CuicaFacet', async function () {
 
   it('Should revert set-up Connext core address by not owner in CuicaFacet', async () => {
     await expect(cuicaFacet.connect(accounts[9]).setConnext(CONNEXT_GNOSIS)).to.be.reverted
+  })
+
+  it('Should set-up signer in PriceBulletin', async () => {
+    const signerToSet = accounts[0].address;
+    const tx = await priceBulletin.setAuthorizedPublisher(signerToSet, true)
+    await tx.wait()
+    const response = await priceBulletin.authorizedPublishers(signerToSet)
+
+    expect(response).to.eq(true)
+    if (DEBUG) console.log(response)
+  })
+
+  it('Should revert attempt to set-up signer by not owner in PriceBulletin', async () => {
+    const signerToSet = accounts[1].address;
+    await expect(priceBulletin.connect(accounts[9]).setAuthorizedPublisher(signerToSet, true)).to.be.reverted
+    const response = await priceBulletin.authorizedPublishers(signerToSet)
+    
+    expect(response).to.eq(false)
     if (DEBUG) console.log(response)
   })
 
