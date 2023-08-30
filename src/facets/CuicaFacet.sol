@@ -74,6 +74,12 @@ contract CuicaFacet is IAggregatorV3, BulletinSigning, AppStorage {
     return cs.connext;
   }
 
+  /**
+   * @notice After storing oracle data aggregate by averaging and publish new round.
+   * 
+   * Requirements:
+   * - All oracles must have been updated within `WORKING_TIME_GAP_LIMIT`.
+   */
   function aggregateAndPublishRound() external {
     OracleFacetStorage storage osr = accessOracleStorage(REDSTONE_STORAGE_POSITION);
     OracleFacetStorage storage osp = accessOracleStorage(PYTH_STORAGE_POSITION);
