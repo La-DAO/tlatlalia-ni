@@ -139,12 +139,12 @@ contract CuicaFacet is IAggregatorV3, BulletinSigning, AppStorage {
   )
     external
     payable
-    returns (bool)
+    returns (bool, bytes memory)
   {
     CuicaFacetStorage storage cs = accessCuicaStorage();
     RoundData memory lastRound = cs.roundInfo[cs.lastRound];
 
-    bytes memory bulletinData = abi.encode(lastRound, v, r, s);
+    bytes memory bulletinSignatureData = abi.encode(lastRound, v, r, s);
 
     IConnext(cs.connext).xcall{value: cost}(
       // _destination: Domain ID of the destination chain
@@ -161,10 +161,10 @@ contract CuicaFacet is IAggregatorV3, BulletinSigning, AppStorage {
       // the maximum amount of slippage the user will accept in BPS, 30 == 0.3%
       0,
       // _callData: the encoded calldata to send
-      bulletinData
+      bulletinSignatureData
     );
 
-    return true;
+    return (true, bulletinSignatureData);
   }
 
   function setConnext(address connext_) external {
