@@ -69,7 +69,7 @@ contract CuicaFacet is IAggregatorV3, BulletinSigning, AppStorage {
     }
   }
 
-  function connext() public view returns(address) {
+  function connext() public view returns (address) {
     CuicaFacetStorage storage cs = accessCuicaStorage();
     return cs.connext;
   }
