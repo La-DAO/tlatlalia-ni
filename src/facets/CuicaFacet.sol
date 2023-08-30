@@ -76,7 +76,7 @@ contract CuicaFacet is IAggregatorV3, BulletinSigning, AppStorage {
 
   /**
    * @notice After storing oracle data aggregate by averaging and publish new round.
-   * 
+   *
    * Requirements:
    * - All oracles must have been updated within `WORKING_TIME_GAP_LIMIT`.
    */
@@ -109,20 +109,20 @@ contract CuicaFacet is IAggregatorV3, BulletinSigning, AppStorage {
       answeredInRound: thisRoundId
     });
     cs.roundInfo[thisRoundId] = newRound;
-    
+
     emit RoundPublished(thisRoundId, int256(average));
   }
 
   /**
    * @notice Sing the price to domain bulletins.
-   * 
+   *
    * @param domain according to ~tlatlalia-ni/scripts/utilsConnext.js
    * @param destination contract address of {PriceBulletin.sol}
    * @param cost per connext: see References
-   * 
+   *
    * @dev References:
    * - https://docs.connext.network/developers/reference/sdk/sdkbase#estimaterelayerfee
-   * - connextSdkBase.estimateRelayerFee(params); 
+   * - connextSdkBase.estimateRelayerFee(params);
    *   In where `params`:
    *   const params = {
    *        originDomain: "6648936",
