@@ -1,10 +1,6 @@
 /* global describe it before ethers */
 require("dotenv").config();
-const {
-  getSelectors,
-  FacetCutAction
-} = require('../../scripts/hardhat/libraries/diamond.js')
-const { deployDiamond } = require('../../scripts/hardhat/deployDiamond.js')
+const { deployDiamondComplete } = require('../../scripts/hardhat/deployDiamondComplete.js')
 const { expect, assert } = require("chai")
 const { WrapperBuilder } = require("@redstone-finance/evm-connector");
 const { EvmPriceServiceConnection } = require("@pythnetwork/pyth-evm-js");
@@ -17,8 +13,6 @@ const DEBUG = false
 const connection = new EvmPriceServiceConnection(
   "https://xc-mainnet.pyth.network"
 );
-
-const CONNEXT_GNOSIS = "0x5bB83e95f63217CDa6aE3D181BA580Ef377D2109"
 
 describe('CuicaFacet', async function () {
   let accounts
@@ -34,105 +28,17 @@ describe('CuicaFacet', async function () {
 
   before(async function () {
     accounts = await ethers.getSigners()
-    diamondAddress = await deployDiamond()
+    diamondAddress = await deployDiamondComplete()
     diamondCutFacet = await ethers.getContractAt('DiamondCutFacet', diamondAddress)
     diamondLoupeFacet = await ethers.getContractAt('DiamondLoupeFacet', diamondAddress)
     ownershipFacet = await ethers.getContractAt('OwnershipFacet', diamondAddress)
+    redstoneFacet = await ethers.getContractAt('RedstoneFacet', diamondAddress)
+    pythFacet = await ethers.getContractAt('PythFacet', diamondAddress)
+    chainlinkFacet = await ethers.getContractAt('ChainlinkFacet', diamondAddress)
+    cuicaFacet = await ethers.getContractAt('CuicaFacet', diamondAddress)
 
     for (const address of await diamondLoupeFacet.facetAddresses()) {
       addresses.push(address)
-    }
-
-    /// Setup RedstoneFacet in Diamond
-
-    const RedstoneFacet = await ethers.getContractFactory('RedstoneFacet')
-    redstoneFacet = await RedstoneFacet.deploy()
-    await redstoneFacet.deployed()
-    addresses.push(redstoneFacet.address)
-
-    let selectors = getSelectors(redstoneFacet)
-
-    let tx = await diamondCutFacet.diamondCut(
-      [{
-        facetAddress: redstoneFacet.address,
-        action: FacetCutAction.Add,
-        functionSelectors: selectors
-      }],
-      ethers.constants.AddressZero, '0x', { gasLimit: 800000 })
-    let receipt = await tx.wait()
-
-    if (!receipt.status) {
-      throw Error(`Diamond upgrade failed: ${tx.hash}`)
-    }
-
-    redstoneFacet = await ethers.getContractAt("RedstoneFacet", diamondAddress)
-
-    /// Setup PythFacet in Diamond
-
-    const PythFacet = await ethers.getContractFactory('PythFacet')
-    pythFacet = await PythFacet.deploy()
-    await pythFacet.deployed()
-    addresses.push(pythFacet.address)
-
-    selectors = getSelectors(pythFacet)
-
-    tx = await diamondCutFacet.diamondCut(
-      [{
-        facetAddress: pythFacet.address,
-        action: FacetCutAction.Add,
-        functionSelectors: selectors
-      }],
-      ethers.constants.AddressZero, '0x', { gasLimit: 800000 })
-    receipt = await tx.wait()
-
-    if (!receipt.status) {
-      throw Error(`Diamond upgrade failed: ${tx.hash}`)
-    }
-    pythFacet = await ethers.getContractAt("PythFacet", diamondAddress)
-
-
-    /// Setup ChainlinkFacet in Diamond
-
-    const ChainlinkFacet = await ethers.getContractFactory('ChainlinkFacet')
-    chainlinkFacet = await ChainlinkFacet.deploy()
-    await chainlinkFacet.deployed()
-    addresses.push(chainlinkFacet.address)
-
-    selectors = getSelectors(chainlinkFacet)
-
-    tx = await diamondCutFacet.diamondCut(
-      [{
-        facetAddress: chainlinkFacet.address,
-        action: FacetCutAction.Add,
-        functionSelectors: selectors
-      }],
-      ethers.constants.AddressZero, '0x', { gasLimit: 800000 })
-    receipt = await tx.wait()
-
-    if (!receipt.status) {
-      throw Error(`Diamond upgrade failed: ${tx.hash}`)
-    }
-    chainlinkFacet = await ethers.getContractAt("ChainlinkFacet", diamondAddress)
-
-    /// Set up CuicaFacet
-    const CuicaFacet = await ethers.getContractFactory('CuicaFacet')
-    cuicaFacet = await CuicaFacet.deploy()
-    await cuicaFacet.deployed()
-    addresses.push(cuicaFacet.address)
-
-    selectors = getSelectors(cuicaFacet)
-
-    tx = await diamondCutFacet.diamondCut(
-      [{
-        facetAddress: cuicaFacet.address,
-        action: FacetCutAction.Add,
-        functionSelectors: selectors
-      }],
-      ethers.constants.AddressZero, '0x', { gasLimit: 800000 })
-    receipt = await tx.wait()
-
-    if (!receipt.status) {
-      throw Error(`Diamond upgrade failed: ${tx.hash}`)
     }
 
     /// Call and store RedstoneFacet price
@@ -182,7 +88,7 @@ describe('CuicaFacet', async function () {
   it('Should return a relayer fee estimate', async () => {
     const digest = await cuicaFacet.getStructHashLastRoundData()
     const ownerSigningKey = new ethers.utils.SigningKey(process.env.TEST_PK);
-    const signedDigest = await ownerSigningKey.signDigest(digest);
+    const signedDigest = ownerSigningKey.signDigest(digest);
     const { v, r, s } = ethers.utils.splitSignature(signedDigest);
 
     const lastRoundInfo = await cuicaFacet.latestRoundData()
@@ -237,7 +143,7 @@ describe('CuicaFacet', async function () {
   it('Should set price in PriceBulletin by random caller with proper signature values', async () => {
     const digest = await cuicaFacet.getStructHashLastRoundData()
     const ownerSigningKey = new ethers.utils.SigningKey(process.env.TEST_PK);
-    const signedDigest = await ownerSigningKey.signDigest(digest);
+    const signedDigest = ownerSigningKey.signDigest(digest);
     const { v, r, s } = ethers.utils.splitSignature(signedDigest);
 
     const lastRoundInfo = await cuicaFacet.latestRoundData()
@@ -282,4 +188,57 @@ describe('CuicaFacet', async function () {
     if (DEBUG) console.log(response)
   })
 
+  it('Should propagate price through Connext', async () => {
+    const digest = await cuicaFacet.getStructHashLastRoundData()
+    const ownerSigningKey = new ethers.utils.SigningKey(process.env.TEST_PK);
+    const signedDigest = ownerSigningKey.signDigest(digest);
+    const { v, r, s } = ethers.utils.splitSignature(signedDigest);
+
+    const lastRoundInfo = await cuicaFacet.latestRoundData()
+    const callData = ethers.utils.defaultAbiCoder.encode(
+      [
+        "tuple(uint80, int256, uint, uint, uint80)",
+        "uint8",
+        "bytes32",
+        "bytes32"
+      ],
+      [
+        [
+          lastRoundInfo.roundId,
+          lastRoundInfo.answer,
+          lastRoundInfo.startedAt,
+          lastRoundInfo.updatedAt,
+          lastRoundInfo.answeredInRound
+        ],
+        v,
+        r,
+        s
+      ]
+    )
+
+    const gasEstimate = await priceBulletin.estimateGas.xReceive(
+      digest,
+      0,
+      ethers.constants.AddressZero,
+      priceBulletin.address,
+      CONNEXT_DATA.gnosis.domainId,
+      callData
+    )
+
+    const sdkBase = await getSdkBaseConnext()
+    const relayerFee = await sdkBase.estimateRelayerFee(getParams(
+      CONNEXT_DATA.gnosis.domainId, CONNEXT_DATA.optimism.domainId, gasEstimate
+    ))
+
+    const tx = await cuicaFacet.tlatlaliaNi(
+      CONNEXT_DATA.optimism.domainId,
+      priceBulletin.address,
+      relayerFee,
+      v,
+      r,
+      s,
+      {value: relayerFee}
+    )
+    await tx.wait()
+  })
 })
