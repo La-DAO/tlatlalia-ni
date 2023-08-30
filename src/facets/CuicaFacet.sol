@@ -108,7 +108,20 @@ contract CuicaFacet is IAggregatorV3, BulletinSigning, AppStorage {
   }
 
   /**
-   * @notice Sing the price to all domain bulletins.
+   * @notice Sing the price to domain bulletins.
+   * 
+   * @param domain according to ~tlatlalia-ni/scripts/utilsConnext.js
+   * @param destination contract address of {PriceBulletin.sol}
+   * @param cost per connext: see References
+   * 
+   * @dev References:
+   * - https://docs.connext.network/developers/reference/sdk/sdkbase#estimaterelayerfee
+   * - connextSdkBase.estimateRelayerFee(params); 
+   *   In where `params`:
+   *   const params = {
+   *        originDomain: "6648936",
+   *        destinationDomain: "1869640809",
+   *    };
    */
   function tlatlaliaNi(
     uint32 domain,
