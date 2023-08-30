@@ -142,7 +142,7 @@ contract CuicaFacet is IAggregatorV3, BulletinSigning, AppStorage {
     payable
     returns (bool, bytes memory)
   {
-    if(msg.value < cost) revert CuicaFacet__tlatlaliaNi_notEnoughMsgValue();
+    if (msg.value < cost) revert CuicaFacet__tlatlaliaNi_notEnoughMsgValue();
 
     CuicaFacetStorage storage cs = accessCuicaStorage();
     RoundData memory lastRound = cs.roundInfo[cs.lastRound];
