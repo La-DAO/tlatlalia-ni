@@ -18,6 +18,7 @@ contract CuicaFacet is IAggregatorV3, BulletinSigning, AppStorage {
   error CuicaFacet__setters_invalidInput();
   error CuicaFacet_aggregateAndPublishRound_notWithinTimeLimit();
   error CuicaFacet__tlatlaliaNi_wrongSizeArrays();
+  error CuicaFacet__tlatlaliaNi_notEnoughMsgValue();
 
   uint256 internal constant WORKING_TIME_GAP_LIMIT = 5 minutes;
 
@@ -141,6 +142,8 @@ contract CuicaFacet is IAggregatorV3, BulletinSigning, AppStorage {
     payable
     returns (bool, bytes memory)
   {
+    if(msg.value < cost) revert CuicaFacet__tlatlaliaNi_notEnoughMsgValue();
+
     CuicaFacetStorage storage cs = accessCuicaStorage();
     RoundData memory lastRound = cs.roundInfo[cs.lastRound];
 
