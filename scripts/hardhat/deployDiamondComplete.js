@@ -71,7 +71,6 @@ async function deployDiamondComplete() {
     console.log('Diamond deployed:', diamond.address)
   }
 
-
   // returning the address of the diamond
   return diamond.address
 }
