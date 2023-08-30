@@ -11,6 +11,7 @@ import {BulletinSigning} from "../BulletinSigning.sol";
 
 contract CuicaFacet is IAggregatorV3, BulletinSigning, AppStorage {
   /// Events
+  event RoundPublished(uint80 roundId, int256 answer);
   event SetConnext(address newConnext);
 
   /// Custom Errors
@@ -102,6 +103,8 @@ contract CuicaFacet is IAggregatorV3, BulletinSigning, AppStorage {
       answeredInRound: thisRoundId
     });
     cs.roundInfo[thisRoundId] = newRound;
+    
+    emit RoundPublished(thisRoundId, int256(average));
   }
 
   /**
