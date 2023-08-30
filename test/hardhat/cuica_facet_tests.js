@@ -1,5 +1,4 @@
 /* global describe it before ethers */
-
 const {
   getSelectors,
   FacetCutAction
@@ -265,7 +264,4 @@ describe('CuicaFacet', async function () {
     expect(response).to.eq(false)
     if (DEBUG) console.log(response)
   })
-
-
-
 })
