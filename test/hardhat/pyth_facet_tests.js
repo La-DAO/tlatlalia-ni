@@ -6,7 +6,6 @@ const {
 } = require('../../scripts/hardhat/libraries/diamond.js')
 const { deployDiamond } = require('../../scripts/hardhat/deployDiamond.js')
 const { expect, assert } = require("chai")
-const { WrapperBuilder } = require("@redstone-finance/evm-connector")
 const { EvmPriceServiceConnection } = require("@pythnetwork/pyth-evm-js")
 const { ethers } = require('hardhat')
 
@@ -21,7 +20,6 @@ describe('PythTests', async function () {
   let diamondAddress
   let diamondCutFacet
   let diamondLoupeFacet
-  let ownershipFacet
   let addresses = []
 
   before(async function () {
