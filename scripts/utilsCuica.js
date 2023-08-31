@@ -1,5 +1,11 @@
 require("dotenv").config()
+const yargs = require('yargs')
 const { ethers } = require('ethers')
+
+const options = yargs
+  .usage("Usage: -t <test>")
+  .option("t", { alias: "test", describe: "Boolean: true if testing", type: "bool", demandOption: false })
+  .argv;
 
 function getGnosisJsonRPCProvider() {
   if (!process.env.RPC_GNOSIS) {
@@ -89,6 +95,7 @@ const CUICA_DATA_TESTNET = {
 module.exports = {
   CUICA_DATA_MAINNET,
   CUICA_DATA_TESTNET,
+  determineTest,
   getGnosisJsonRPCProvider,
   getLocalhostJsonRPCProvider,
   getVoidSigner,
