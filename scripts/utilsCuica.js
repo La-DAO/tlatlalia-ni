@@ -37,7 +37,7 @@ function pad(number, padding) {
   return String(number).padStart(padding, '0')
 }
 
-function logNewLine() {
+function logNewLine(type) {
   const currentTime = getTime()
   const year = currentTime.getFullYear();
   const month = pad(currentTime.getMonth(), 2) // Month value is zero-based (0 - 11)
