@@ -46,7 +46,15 @@ function logNewLine() {
   const minutes = pad(currentTime.getMinutes(), 2)
   const seconds = pad(currentTime.getSeconds(), 2)
   const milliseconds = pad(currentTime.getMilliseconds(), 3);
-  return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}.${milliseconds} INFO - `
+  return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}.${milliseconds} ${type} - `
+}
+
+function determineTest() {
+  if(!options.test) {
+    return false
+  } else {
+    return options.test
+  }
 }
 
 const CUICA_DATA_MAINNET = {
