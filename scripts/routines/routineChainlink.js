@@ -33,11 +33,15 @@ async function routineChainlink() {
   }
 
   console.log(`${logNewLine('INFO')} Storing Chainlink price ...`)
-  const tx1 = await chainlinkFacet.storePrice_Chainlink()
-  await tx1.wait()
-  const tx2 = await chainlinkFacet.getPrice_Chainlink()
-  const formatedPrice = (tx2.toNumber() / 1e8).toFixed(8)
-  console.log(`${logNewLine('INFO')} Success! Chainlink price stored: ${formatedPrice} usd/mxn`)
+  try {
+    const tx1 = await chainlinkFacet.storePrice_Chainlink()
+    await tx1.wait()
+    const tx2 = await chainlinkFacet.getPrice_Chainlink()
+    const formatedPrice = (tx2.toNumber() / 1e8).toFixed(8)
+    console.log(`${logNewLine('INFO')} Success! Chainlink price stored: ${formatedPrice} usd/mxn`)
+  } catch (error) {
+    console.log(`${logNewLine('WARN')} Storing Chainlink price reverted ERROR: \n${error}`)
+  }
 }
 
 // We recommend this pattern to be able to use async/await everywhere

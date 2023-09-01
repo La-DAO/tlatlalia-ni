@@ -42,11 +42,16 @@ async function routineRedstone() {
     )
 
   console.log(`${logNewLine('INFO')} Storing Redstone price ...`)
-  const tx1 = await w_redstoneFacet.storePrice_Redstone()
-  await tx1.wait()
-  const tx2 = await w_redstoneFacet.getPrice_Redstone()
-  const formatedPrice = (tx2.toNumber() / 1e8).toFixed(8)
-  console.log(`${logNewLine('INFO')} Success! Redstone price stored: ${formatedPrice} usd/mxn`)
+  try {
+    const tx1 = await w_redstoneFacet.storePrice_Redstone()
+    await tx1.wait()
+    const tx2 = await w_redstoneFacet.getPrice_Redstone()
+    const formatedPrice = (tx2.toNumber() / 1e8).toFixed(8)
+    console.log(`${logNewLine('INFO')} Success! Redstone price stored: ${formatedPrice} usd/mxn`)
+  } catch (error) {
+    console.log(`${logNewLine('WARN')} Storing Redstone price reverted ERROR: \n${error}`)
+  }
+
 }
 
 // We recommend this pattern to be able to use async/await everywhere

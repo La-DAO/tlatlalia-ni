@@ -72,11 +72,15 @@ async function routinePyth() {
     console.log(`${logNewLine('WARN')} Pyth update fee above threshold!`)
 
   } else {
-    const tx1 = await pythFacet.storePrice_Pyth(priceUpdateData, { value: updateFee })
-    await tx1.wait()
-    const tx2 = await pythFacet.getPrice_Pyth()
-    const formatedPrice = (tx2.toNumber() / 1e8).toFixed(8)
-    console.log(`${logNewLine('INFO')} Success! Pyth price stored: ${formatedPrice} usd/mxn`)
+    try {
+      const tx1 = await pythFacet.storePrice_Pyth(priceUpdateData, { value: updateFee })
+      await tx1.wait()
+      const tx2 = await pythFacet.getPrice_Pyth()
+      const formatedPrice = (tx2.toNumber() / 1e8).toFixed(8)
+      console.log(`${logNewLine('INFO')} Success! Pyth price stored: ${formatedPrice} usd/mxn`)
+    } catch (error) {
+      console.log(`${logNewLine('WARN')} Storing Pyth price reverted ERROR: \n${error}`)
+    }
   }
 }
 
