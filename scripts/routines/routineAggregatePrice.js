@@ -7,9 +7,6 @@ const {
   getEnvWSigner,
   logNewLine
 } = require('../utilsCuica')
-const { routineRedstone } = require('./routineRedstone')
-const { routinePyth } = require('./routinePyth')
-const { routineChainlink } = require('./routineChainlink')
 
 const TEST = determineTest()
 
