@@ -8,31 +8,37 @@ const CONNEXT_DATA = {
   ethereum: {
     coreAddress: "0x8898B472C54c31894e3B9bb83cEA802a5d0e63C6",
     domainId: 6648936,
+    chainId: 1,
     providers: [process.env.RPC_MAINNET],
   },
   polygon: {
     coreAddress: "0x11984dc4465481512eb5b777E44061C158CF2259",
     domainId: 1886350457,
+    chainId: 137,
     providers: [process.env.RPC_POLYGON]
   },
   arbitrum: {
     coreAddress: "0xEE9deC2712cCE65174B561151701Bf54b99C24C8",
     domainId: 1634886255,
+    chainId: 42161,
     providers: [process.env.RPC_ARBITRUM]
   },
   optimism: {
     coreAddress: "0x8f7492DE823025b4CfaAB1D34c58963F2af5DEDA",
     domainId: 1869640809,
+    chainId: 10,
     providers: [process.env.RPC_OPTIMISM]
   },
   gnosis: {
     coreAddress: "0x5bB83e95f63217CDa6aE3D181BA580Ef377D2109",
     domainId: 6778479,
+    chainId: 100,
     providers: [process.env.RPC_GNOSIS]
   },
   binance: {
     coreAddress: "0xCd401c10afa37d641d2F594852DA94C700e4F2CE",
     domainId: 6450786,
+    chainId: 56,
     providers: [process.env.RPC_BINANCE]
   }
 }
