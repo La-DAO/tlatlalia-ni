@@ -7,7 +7,7 @@ const { EvmPriceServiceConnection } = require("@pythnetwork/pyth-evm-js");
 const { ethers } = require('hardhat');
 const { CONNEXT_DATA, getSdkBaseConnext, getParams } = require('../../scripts/utilsConnext.js')
 
-const DEBUG = false
+const DEBUG = true
 
 // https://github.com/pyth-network/pyth-crosschain/tree/main/target_chains/ethereum/sdk/js#price-service-endpoints
 const connection = new EvmPriceServiceConnection(
@@ -76,6 +76,10 @@ describe('CuicaFacet', async function () {
     tx = await chainlinkFacet.storePrice_Chainlink()
     await tx.wait()
 
+    // Aggregate and publish round
+    tx = await cuicaFacet.aggregateAndPublishRound()
+    await tx.wait()
+
     /// Deploy and set signer in PriceBulletin
 
     const PriceBulletin = await ethers.getContractFactory("PriceBulletin")
@@ -86,7 +90,8 @@ describe('CuicaFacet', async function () {
   })
 
   it('Should return a relayer fee estimate', async () => {
-    const digest = await cuicaFacet.getStructHashLastRoundData()
+    const structHash = await cuicaFacet.getStructHashLastRoundData()
+    const digest = await priceBulletin.getHashTypedDataV4Digest(structHash)
     const ownerSigningKey = new ethers.utils.SigningKey(process.env.TEST_PK);
     const signedDigest = ownerSigningKey.signDigest(digest);
     const { v, r, s } = ethers.utils.splitSignature(signedDigest);
@@ -141,12 +146,14 @@ describe('CuicaFacet', async function () {
   })
 
   it('Should set price in PriceBulletin by random caller with proper signature values', async () => {
-    const digest = await cuicaFacet.getStructHashLastRoundData()
-    const ownerSigningKey = new ethers.utils.SigningKey(process.env.TEST_PK);
-    const signedDigest = ownerSigningKey.signDigest(digest);
-    const { v, r, s } = ethers.utils.splitSignature(signedDigest);
+    const structHash = await cuicaFacet.getStructHashLastRoundData()
+    const digest = await priceBulletin.getHashTypedDataV4Digest(structHash)
+    const ownerSigningKey = new ethers.utils.SigningKey(process.env.TEST_PK)
+    const signedDigest = ownerSigningKey.signDigest(digest)
+    const { v, r, s } = ethers.utils.splitSignature(signedDigest)
 
     const lastRoundInfo = await cuicaFacet.latestRoundData()
+
     const callData = ethers.utils.defaultAbiCoder.encode(
       [
         "tuple(uint80, int256, uint, uint, uint80)",
@@ -178,14 +185,17 @@ describe('CuicaFacet', async function () {
     )
 
     const response = await priceBulletin.latestRoundData()
+    
+    if (DEBUG) {
+      console.log('cuicaFacet.lastRoundData', lastRoundInfo)
+      console.log('priceBulletin.latestRoundData', response)
+    } 
 
     expect(response.roundId).to.eq(lastRoundInfo.roundId)
     expect(response.answer).to.eq(lastRoundInfo.answer)
     expect(response.startedAt).to.eq(lastRoundInfo.startedAt)
     expect(response.updatedAt).to.eq(lastRoundInfo.updatedAt)
     expect(response.answeredInRound).to.eq(lastRoundInfo.answeredInRound)
-
-    if (DEBUG) console.log(response)
   })
 
   it('Should propagate price through Connext', async () => {
