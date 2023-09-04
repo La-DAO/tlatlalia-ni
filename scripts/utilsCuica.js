@@ -1,10 +1,12 @@
 require("dotenv").config()
 const yargs = require('yargs')
 const { ethers } = require('ethers')
+const { CONNEXT_DATA } = require('./utilsConnext')
 
 const options = yargs
-  .usage("Usage: -t <test>")
+  .usage("Usage: -t <test> -c <chain>")
   .option("t", { alias: "test", describe: "Boolean: true if testing", type: "bool", demandOption: false })
+  .option("c", { alias: "chain", describe: "String: chain name", type: "string", demandOption: false })
   .argv;
 
 function getGnosisJsonRPCProvider() {
@@ -50,11 +52,28 @@ function logNewLine(type) {
 }
 
 function determineTest() {
-  if(!options.test) {
+  if (!options.test) {
     return false
   } else {
     return options.test
   }
+}
+
+function getChainProvider(chainName) {
+  let jsonRPC
+  if (!options.chain && chainName == 'localhost') {
+    jsonRPC = getLocalhostJsonRPCProvider()
+  } else if (chainName != 'localhost') {
+    const url = CONNEXT_DATA[chainName].providers[0]
+    jsonRPC =  new ethers.providers.JsonRpcProvider(url)
+  } else {
+    const url = CONNEXT_DATA[options.chain].providers[0]
+    jsonRPC = new ethers.providers.JsonRpcProvider(url)
+  }
+  if (!jsonRPC) {
+    throw `Please set 'providers' in CONNEXT_DATA for 'chainName'`
+  }
+  return jsonRPC
 }
 
 const CUICA_DATA_MAINNET = {
@@ -106,6 +125,7 @@ module.exports = {
   determineTest,
   getGnosisJsonRPCProvider,
   getLocalhostJsonRPCProvider,
+  getChainProvider,
   getVoidSigner,
   getEnvWSigner,
   logNewLine
