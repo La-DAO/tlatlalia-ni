@@ -31,6 +31,7 @@
     "@pythnetwork/pyth-sdk-solidity": "^2.2.1",
     "@redstone-finance/evm-connector": "^0.0.22",
     "dotenv": "^16.3.1",
+    "luxon": "^3.4.3",
     "redstone-api": "^0.4.11",
     "yargs": "^17.7.2"
   }
