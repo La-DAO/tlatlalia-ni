@@ -6,10 +6,6 @@ const {
   getEnvWSigner,
   getChainProvider
 } = require('../utilsCuica')
-const { routineRedstone } = require('./routineRedstone')
-const { routinePyth } = require('./routinePyth')
-const { routineChainlink } = require('./routineChainlink')
-const {routineAggregatePrice} = require('./routineAggregatePrice')
 const { routineSignLastRound } = require('./routineSignLastRound')
 
 const TEST = determineTest()
