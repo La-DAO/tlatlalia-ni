@@ -42,7 +42,7 @@ function pad(number, padding) {
 function logNewLine(type) {
   const currentTime = getTime()
   const year = currentTime.getFullYear();
-  const month = pad(currentTime.getMonth(), 2) // Month value is zero-based (0 - 11)
+  const month = pad(currentTime.getMonth() + 1, 2) // Month value is zero-based (0 - 11)
   const day = pad(currentTime.getDate(), 2)
   const hours = pad(currentTime.getHours(), 2)
   const minutes = pad(currentTime.getMinutes(), 2)
