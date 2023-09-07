@@ -1,4 +1,5 @@
 const { DateTime } = require('luxon')
+const { logNewLine, formatDuration } = require('./utilsCuica')
 const { routineUpdateAllOracles } = require('./routines/routineUpdateAllOracles')
 const { routineUpdateBulletin } = require('./routines/routineUpdateBulletin')
 
@@ -6,9 +7,9 @@ function scheduleCallback(callback) {
   // Get the current date and time in Eastern Time (ET)
   const currentTimeET = DateTime.now().setZone('America/New_York');
 
-  const currentDay = currentTimeET.weekday; // 1 = Monday, 7 = Sunday
-  const currentHour = currentTimeET.hour;
-  const currentMinute = currentTimeET.minute;
+  const currentDay = currentTimeET.weekday // 1 = Monday, 7 = Sunday
+  const currentHour = currentTimeET.hour
+  const currentMinute = currentTimeET.minute
 
   // Define the scheduled times in ET
   const scheduledTimes = [
@@ -17,34 +18,37 @@ function scheduleCallback(callback) {
     { hour: 16, minute: 30 }
   ];
 
-  let nextScheduledTime = null;
+  let nextScheduledTime = null
 
   for (const time of scheduledTimes) {
-    const scheduledDateTime = currentTimeET.set({ hour: time.hour, minute: time.minute });
+    const scheduledDateTime = currentTimeET.set({ hour: time.hour, minute: time.minute })
 
     // Check if the scheduled time is in the future
     if (scheduledDateTime > currentTimeET) {
       if (nextScheduledTime === null || scheduledDateTime < nextScheduledTime) {
-        nextScheduledTime = scheduledDateTime;
+        nextScheduledTime = scheduledDateTime
       }
     }
   }
 
   // If no scheduled time for today, calculate for tomorrow
   if (nextScheduledTime === null) {
-    const tomorrow = currentTimeET.plus({ days: 1 });
-    nextScheduledTime = tomorrow.set({ hour: scheduledTimes[0].hour, minute: scheduledTimes[0].minute });
+    const tomorrow = currentTimeET.plus({ days: 1 })
+    nextScheduledTime = tomorrow.set({ hour: scheduledTimes[0].hour, minute: scheduledTimes[0].minute })
   }
 
   // Calculate the delay in milliseconds
-  const delayMillis = nextScheduledTime.diff(currentTimeET).as('milliseconds');
+  const delayMillis = nextScheduledTime.diff(currentTimeET).as('milliseconds')
+  const durationString = formatDuration(delayMillis)
 
+  console.log(`${logNewLine('INFO')} Next scheduler callback in ${durationString} ...`)
   // Schedule the callback
-  setTimeout(callback, delayMillis);
+  setTimeout(callback, delayMillis)
 }
 
 // Example usage
 async function routineCallbacks() {
+  console.log(`${logNewLine('INFO')} Begin of scheduler callbacks ...`)
   await routineUpdateAllOracles()
   await routineUpdateBulletin('gnosis')
   scheduleCallback(routineCallbacks);
