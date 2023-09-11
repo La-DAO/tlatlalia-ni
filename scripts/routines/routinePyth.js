@@ -50,7 +50,7 @@ async function routinePyth() {
     pyth = new ethers.Contract(
       pythAddress,
       pythAbi,
-      getVoidSigner(getLocalhostJsonRPCProvider())
+      getVoidSigner(getGnosisJsonRPCProvider())
     )
   }
 
