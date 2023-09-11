@@ -15,7 +15,7 @@ const TEST = determineTest()
  * @param {string} chainName 
  */
 async function routineUpdateBulletin(chainName='localhost') {
-  const {digest, v, r, s, callData} = await routineSignLastRound()
+  const {digest, v, r, s, callData} = await routineSignLastRound(chainName)
 
   const bulletinAbi = [
     'function xReceive(bytes32, uint, address, address, uint32, bytes)',
