@@ -107,6 +107,34 @@ contract PriceBulletin is IPriceBulletin, BulletinSigning, Ownable {
     emit SetAuthorizedPublisher(publisher, set);
   }
 
+  function _checkValidBulletinUpdateData(
+    RoundData memory round,
+    uint8 v,
+    bytes32 r,
+    bytes32 s
+  )
+    internal
+    returns (bool valid, string memory err)
+  {
+    uint80 currentRoundId = _recordedRoundInfo.roundId;
+    uint80 newRoundId = round.roundId;
+
+    bytes32 structHash = getStructHashRoundData(round);
+    address presumedSigner = _getSigner(structHash, v, r, s);
+
+    if (currentRoundId >= newRoundId) {
+      valid = false;
+      err = "Bad RoundId!";
+    } else if (!authorizedPublishers[presumedSigner]) {
+      valid = false;
+      err = "Bad publisher!";
+    } else {
+      _recordedRoundInfo = round;
+      valid = true;
+      err = "";
+    }
+  }
+
   /**
    * @dev Returns the signer of the`structHash`.
    *
