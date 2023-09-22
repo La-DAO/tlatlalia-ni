@@ -13,7 +13,7 @@ const TEST = determineTest()
 
 /**
  * @notice Sign the last round in CuicaFacet
- * @returns Digest, signature values and calldata to be used in `PriceBulletin.xReceive(...)`
+ * @returns Digest, signature values and calldata to be used in `PriceBulletin.updatePriceBulletin(...)`
  */
 async function routineSignLastRound(chainName='localhost') {
   const abi = [
@@ -22,15 +22,9 @@ async function routineSignLastRound(chainName='localhost') {
     'function getHashTypedDataV4Digest(bytes32) view returns (bytes32)'
   ]
   let cuicaFacet
-  let bulletin
   if (TEST) {
     cuicaFacet = new ethers.Contract(
       CUICA_DATA_MAINNET.gnosis.diamond,
-      abi,
-      getVoidSigner(getLocalhostJsonRPCProvider())
-    )
-    bulletin = new ethers.Contract(
-      '0x94C82325a2B26f27AEb08B936331c8485a988634',
       abi,
       getVoidSigner(getLocalhostJsonRPCProvider())
     )
@@ -39,11 +33,6 @@ async function routineSignLastRound(chainName='localhost') {
       CUICA_DATA_MAINNET.gnosis.diamond,
       abi,
       getVoidSigner(getGnosisJsonRPCProvider())
-    )
-    bulletin = new ethers.Contract(
-      '0x94C82325a2B26f27AEb08B936331c8485a988634',
-      abi,
-      getVoidSigner(getChainProvider(chainName))
     )
   }
 
@@ -62,7 +51,7 @@ async function routineSignLastRound(chainName='localhost') {
     throw "Please set PRIVATE_KEY in .env"
   }
 
-  const digest = await bulletin.getHashTypedDataV4Digest(structHash)
+  const digest = await cuicaFacet.getHashTypedDataV4Digest(structHash)
   const signingKey = new ethers.utils.SigningKey(process.env.PRIVATE_KEY)
   const signedDigest = signingKey.signDigest(digest)
   const { v, r, s } = ethers.utils.splitSignature(signedDigest)
