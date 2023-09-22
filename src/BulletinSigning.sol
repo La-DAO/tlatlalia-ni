@@ -2,6 +2,7 @@
 pragma solidity 0.8.17;
 
 import {RoundData} from "./libraries/AppStorage.sol";
+import {ECDSA} from "openzeppelin-contracts/utils/cryptography/ECDSA.sol";
 
 abstract contract BulletinSigning {
   string internal constant VERSION = "v0.0.1";
