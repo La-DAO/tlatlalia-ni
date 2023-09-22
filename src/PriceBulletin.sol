@@ -2,20 +2,29 @@
 pragma solidity 0.8.17;
 
 import {IPriceBulletin} from "./interfaces/IPriceBulletin.sol";
-import {BulletinSigning} from "./BulletinSigning.sol";
-import {ECDSA} from "openzeppelin-contracts/utils/cryptography/ECDSA.sol";
+import {ECDSA, BulletinSigning} from "./BulletinSigning.sol";
 import {Ownable} from "openzeppelin-contracts/access/Ownable.sol";
 import {RoundData} from "./libraries/AppStorage.sol";
 
 contract PriceBulletin is IPriceBulletin, BulletinSigning, Ownable {
   /// Events
-  event BulletinUpdated(int256 answer);
-  event FailedBulletingUpdate(address presumedSigner);
+  event BulletinUpdated(uint80 rounId, int256 answer);
+  event FailedBulletingUpdate(string err);
   event SetAuthorizedPublisher(address publisher, bool status);
 
   /// Errors
   error PriceBulletin__setter_invalidInput();
   error PriceBulletin__setter_noChange();
+
+  bytes32 private constant CUICA_DOMAIN = keccak256(
+    abi.encode(
+      TYPEHASH,
+      NAMEHASH,
+      VERSIONHASH,
+      address(0x8f78dc290e1701EC664909410661DC17E9c7b62b),
+      keccak256(abi.encode(0x64))
+    )
+  );
 
   RoundData private _recordedRoundInfo;
 
@@ -79,20 +88,22 @@ contract PriceBulletin is IPriceBulletin, BulletinSigning, Ownable {
     external
     returns (bytes memory)
   {
+    updateBulletin(callData);
+    return abi.encode(transferId);
+  }
+
+  function updateBulletin(bytes memory callData) public returns (bool success) {
     (RoundData memory round, uint8 v, bytes32 r, bytes32 s) =
       abi.decode(callData, (RoundData, uint8, bytes32, bytes32));
 
-    bytes32 structHash = getStructHashRoundData(round);
-    address presumedSigner = _getSigner(structHash, v, r, s);
+    (bool valid, string memory err) = _checkValidBulletinUpdateData(round, v, r, s);
 
-    if (authorizedPublishers[presumedSigner]) {
-      _recordedRoundInfo = round;
-      emit BulletinUpdated(round.answer);
+    if (valid) {
+      success = true;
+      emit BulletinUpdated(round.roundId, round.answer);
     } else {
-      emit FailedBulletingUpdate(presumedSigner);
+      emit FailedBulletingUpdate(err);
     }
-
-    return abi.encode(transferId);
   }
 
   function setAuthorizedPublisher(address publisher, bool set) external onlyOwner {
@@ -106,6 +117,34 @@ contract PriceBulletin is IPriceBulletin, BulletinSigning, Ownable {
     authorizedPublishers[publisher] = set;
 
     emit SetAuthorizedPublisher(publisher, set);
+  }
+
+  function _checkValidBulletinUpdateData(
+    RoundData memory round,
+    uint8 v,
+    bytes32 r,
+    bytes32 s
+  )
+    internal
+    returns (bool valid, string memory err)
+  {
+    uint80 currentRoundId = _recordedRoundInfo.roundId;
+    uint80 newRoundId = round.roundId;
+
+    bytes32 structHash = getStructHashRoundData(round);
+    address presumedSigner = _getSigner(structHash, v, r, s);
+
+    if (currentRoundId >= newRoundId) {
+      valid = false;
+      err = "Bad RoundId!";
+    } else if (!authorizedPublishers[presumedSigner]) {
+      valid = false;
+      err = "Bad publisher!";
+    } else {
+      _recordedRoundInfo = round;
+      valid = true;
+      err = "";
+    }
   }
 
   /**
@@ -130,9 +169,7 @@ contract PriceBulletin is IPriceBulletin, BulletinSigning, Ownable {
     presumedSigner = ECDSA.recover(digest, v, r, s);
   }
 
-  function _getDomainSeparator() internal view override returns (bytes32) {
-    return keccak256(
-      abi.encode(TYPEHASH, NAMEHASH, VERSIONHASH, address(this), keccak256(abi.encode(0x64)))
-    );
+  function _getDomainSeparator() internal pure override returns (bytes32) {
+    return CUICA_DOMAIN;
   }
 }

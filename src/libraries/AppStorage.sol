@@ -19,6 +19,7 @@ struct CuicaFacetStorage {
   mapping(uint80 => RoundData) roundInfo;
   uint80 lastRound;
   address connext;
+  mapping(address => bool) authorizedPublishers;
 }
 
 contract AppStorage {

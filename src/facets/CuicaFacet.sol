@@ -7,17 +7,21 @@ import {
 } from "../libraries/AppStorage.sol";
 import {LibDiamond} from "../libraries/LibDiamond.sol";
 import {IConnext} from "../interfaces/connext/IConnext.sol";
-import {BulletinSigning} from "../BulletinSigning.sol";
+import {ECDSA, BulletinSigning} from "../BulletinSigning.sol";
 
 contract CuicaFacet is IAggregatorV3, BulletinSigning, AppStorage {
   /// Events
   event RoundPublished(uint80 roundId, int256 answer);
+  event RoundSigned(uint80 roundId, bytes32 digest, uint8 v, bytes32 r, bytes32 s);
+  event SetAuthorizedPublisher(address publisher, bool status);
   event SetConnext(address newConnext);
 
   /// Custom Errors
   error CuicaFacet__setters_invalidInput();
+  error CuicaFacet__setter_noChange();
   error CuicaFacet_aggregateAndPublishRound_notWithinTimeLimit();
   error CuicaFacet__tlatlaliaNi_wrongSizeArrays();
+  error CuicaFacet__tlatlaliaNi_notAuthorizedPublisherSignature();
   error CuicaFacet__tlatlaliaNi_notEnoughMsgValue();
 
   uint256 internal constant WORKING_TIME_GAP_LIMIT = 5 minutes;
@@ -140,34 +144,58 @@ contract CuicaFacet is IAggregatorV3, BulletinSigning, AppStorage {
   )
     external
     payable
-    returns (bool, bytes memory)
+    returns (bool success)
   {
-    if (msg.value < cost) revert CuicaFacet__tlatlaliaNi_notEnoughMsgValue();
-
     CuicaFacetStorage storage cs = accessCuicaStorage();
     RoundData memory lastRound = cs.roundInfo[cs.lastRound];
 
-    bytes memory bulletinSignatureData = abi.encode(lastRound, v, r, s);
+    bytes32 digest = getHashTypedDataV4Digest(getStructHashRoundData(lastRound));
 
-    IConnext(cs.connext).xcall{value: cost}(
-      // _destination: Domain ID of the destination chain
-      domain,
-      // _to: address of the target contract
-      destination,
-      // _asset: address of the token contract
-      address(0),
-      // _delegate: address that can revert or forceLocal on destination
-      destination,
-      // _amount: amount of tokens to transfer
-      0,
-      // _slippage: can be anything between 0-10000 becaus
-      // the maximum amount of slippage the user will accept in BPS, 30 == 0.3%
-      0,
-      // _callData: the encoded calldata to send
-      bulletinSignatureData
-    );
+    _checkValidSigner(digest, v, r, s);
 
-    return (true, bulletinSignatureData);
+    if (domain != 0) {
+      if (msg.value < cost) revert CuicaFacet__tlatlaliaNi_notEnoughMsgValue();
+
+      bytes memory bulletinSignatureData = abi.encode(lastRound, v, r, s);
+
+      IConnext(cs.connext).xcall{value: cost}(
+        // _destination: Domain ID of the destination chain
+        domain,
+        // _to: address of the target contract
+        destination,
+        // _asset: address of the token contract
+        address(0),
+        // _delegate: address that can revert or forceLocal on destination
+        destination,
+        // _amount: amount of tokens to transfer
+        0,
+        // _slippage: can be anything between 0-10000 becaus
+        // the maximum amount of slippage the user will accept in BPS, 30 == 0.3%
+        0,
+        // _callData: the encoded calldata to send
+        bulletinSignatureData
+      );
+    }
+
+    emit RoundSigned(lastRound.roundId, digest, v, r, s);
+    success = true;
+  }
+
+  function setAuthorizedPublisher(address publisher, bool set) external {
+    LibDiamond.enforceIsContractOwner();
+
+    CuicaFacetStorage storage cs = accessCuicaStorage();
+
+    if (publisher == address(0)) {
+      revert CuicaFacet__setters_invalidInput();
+    }
+    if (cs.authorizedPublishers[publisher] == set) {
+      revert CuicaFacet__setter_noChange();
+    }
+
+    cs.authorizedPublishers[publisher] = set;
+
+    emit SetAuthorizedPublisher(publisher, set);
   }
 
   function setConnext(address connext_) external {
@@ -201,5 +229,30 @@ contract CuicaFacet is IAggregatorV3, BulletinSigning, AppStorage {
         TYPEHASH, NAMEHASH, VERSIONHASH, address(this), keccak256(abi.encode(block.chainid))
       )
     );
+  }
+
+  /**
+   * @dev Checks the signer of the`digest` is an `authorizedPublisher`.
+   *
+   * @param digest of data
+   * @param v signature value
+   * @param r signautre value
+   * @param s signature value
+   */
+  function _checkValidSigner(
+    bytes32 digest,
+    uint8 v,
+    bytes32 r,
+    bytes32 s
+  )
+    internal
+    view
+    returns (address presumedSigner)
+  {
+    presumedSigner = ECDSA.recover(digest, v, r, s);
+    CuicaFacetStorage storage cs = accessCuicaStorage();
+    if (!cs.authorizedPublishers[presumedSigner]) {
+      revert CuicaFacet__tlatlaliaNi_notAuthorizedPublisherSignature();
+    }
   }
 }
