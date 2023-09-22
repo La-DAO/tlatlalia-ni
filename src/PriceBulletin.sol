@@ -8,8 +8,8 @@ import {RoundData} from "./libraries/AppStorage.sol";
 
 contract PriceBulletin is IPriceBulletin, BulletinSigning, Ownable {
   /// Events
-  event BulletinUpdated(int256 answer);
-  event FailedBulletingUpdate(address presumedSigner);
+  event BulletinUpdated(uint80 rounId, int256 answer);
+  event FailedBulletingUpdate(string err);
   event SetAuthorizedPublisher(address publisher, bool status);
 
   /// Errors
@@ -78,20 +78,22 @@ contract PriceBulletin is IPriceBulletin, BulletinSigning, Ownable {
     external
     returns (bytes memory)
   {
+    updateBulletin(callData);
+    return abi.encode(transferId);
+  }
+
+  function updateBulletin(bytes memory callData) public returns (bool success) {
     (RoundData memory round, uint8 v, bytes32 r, bytes32 s) =
       abi.decode(callData, (RoundData, uint8, bytes32, bytes32));
 
-    bytes32 structHash = getStructHashRoundData(round);
-    address presumedSigner = _getSigner(structHash, v, r, s);
+    (bool valid, string memory err) = _checkValidBulletinUpdateData(round, v, r, s);
 
-    if (authorizedPublishers[presumedSigner]) {
-      _recordedRoundInfo = round;
-      emit BulletinUpdated(round.answer);
+    if (valid) {
+      success = true;
+      emit BulletinUpdated(round.roundId, round.answer);
     } else {
-      emit FailedBulletingUpdate(presumedSigner);
+      emit FailedBulletingUpdate(err);
     }
-
-    return abi.encode(transferId);
   }
 
   function setAuthorizedPublisher(address publisher, bool set) external onlyOwner {
