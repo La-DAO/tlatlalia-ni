@@ -16,6 +16,16 @@ contract PriceBulletin is IPriceBulletin, BulletinSigning, Ownable {
   error PriceBulletin__setter_invalidInput();
   error PriceBulletin__setter_noChange();
 
+  bytes32 private constant CUICA_DOMAIN = keccak256(
+    abi.encode(
+      TYPEHASH,
+      NAMEHASH,
+      VERSIONHASH,
+      address(0x8f78dc290e1701EC664909410661DC17E9c7b62b),
+      keccak256(abi.encode(0x64))
+    )
+  );
+
   RoundData private _recordedRoundInfo;
 
   mapping(address => bool) public authorizedPublishers;
@@ -159,9 +169,7 @@ contract PriceBulletin is IPriceBulletin, BulletinSigning, Ownable {
     presumedSigner = ECDSA.recover(digest, v, r, s);
   }
 
-  function _getDomainSeparator() internal view override returns (bytes32) {
-    return keccak256(
-      abi.encode(TYPEHASH, NAMEHASH, VERSIONHASH, address(this), keccak256(abi.encode(0x64)))
-    );
+  function _getDomainSeparator() internal pure override returns (bytes32) {
+    return CUICA_DOMAIN;
   }
 }
