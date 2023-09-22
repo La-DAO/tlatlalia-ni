@@ -2,8 +2,7 @@
 pragma solidity 0.8.17;
 
 import {IPriceBulletin} from "./interfaces/IPriceBulletin.sol";
-import {BulletinSigning} from "./BulletinSigning.sol";
-import {ECDSA} from "openzeppelin-contracts/utils/cryptography/ECDSA.sol";
+import {ECDSA, BulletinSigning} from "./BulletinSigning.sol";
 import {Ownable} from "openzeppelin-contracts/access/Ownable.sol";
 import {RoundData} from "./libraries/AppStorage.sol";
 

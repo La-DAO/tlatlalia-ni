@@ -7,7 +7,7 @@ import {
 } from "../libraries/AppStorage.sol";
 import {LibDiamond} from "../libraries/LibDiamond.sol";
 import {IConnext} from "../interfaces/connext/IConnext.sol";
-import {BulletinSigning} from "../BulletinSigning.sol";
+import {ECDSA, BulletinSigning} from "../BulletinSigning.sol";
 
 contract CuicaFacet is IAggregatorV3, BulletinSigning, AppStorage {
   /// Events
