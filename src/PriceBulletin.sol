@@ -3,10 +3,11 @@ pragma solidity 0.8.17;
 
 import {IPriceBulletin} from "./interfaces/IPriceBulletin.sol";
 import {ECDSA, BulletinSigning} from "./BulletinSigning.sol";
-import {Ownable} from "openzeppelin-contracts/access/Ownable.sol";
+import {OwnableUpgradeable} from "openzeppelin-contracts-upgradeable/access/OwnableUpgradeable.sol";
+import {UUPSUpgradeable} from "openzeppelin-contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 import {RoundData} from "./libraries/AppStorage.sol";
 
-contract PriceBulletin is IPriceBulletin, BulletinSigning, Ownable {
+contract PriceBulletin is IPriceBulletin, UUPSUpgradeable, OwnableUpgradeable, BulletinSigning {
   /// Events
   event BulletinUpdated(uint80 rounId, int256 answer);
   event FailedBulletingUpdate(string err);
@@ -29,6 +30,15 @@ contract PriceBulletin is IPriceBulletin, BulletinSigning, Ownable {
   RoundData private _recordedRoundInfo;
 
   mapping(address => bool) public authorizedPublishers;
+
+  /// @custom:oz-upgrades-unsafe-allow constructor
+  constructor() {
+    _disableInitializers();
+  }
+
+  function initialize() external initializer {
+    __Ownable_init();
+  }
 
   function decimals() external pure returns (uint8) {
     return 8;
@@ -172,4 +182,6 @@ contract PriceBulletin is IPriceBulletin, BulletinSigning, Ownable {
   function _getDomainSeparator() internal pure override returns (bytes32) {
     return CUICA_DOMAIN;
   }
+
+  function _authorizeUpgrade(address newImplementation) internal override onlyOwner {}
 }
