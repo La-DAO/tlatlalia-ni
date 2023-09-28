@@ -3,3 +3,4 @@ redstone-finance/evm-connector/contracts/=lib/redstone-oracles-monorepo/packages
 @redstone-finance/=node_modules/@redstone-finance/
 @pythnetwork/=node_modules/@pythnetwork/
 openzeppelin-contracts/=lib/openzeppelin-contracts/contracts/
+openzeppelin-contracts-upgradeable/=lib/openzeppelin-contracts-upgradeable/contracts/
