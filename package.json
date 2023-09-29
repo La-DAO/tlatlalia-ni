@@ -5,8 +5,6 @@
   "main": "index.js",
   "repository": "https://github.com/La-DAO/tlatlalia-ni",
   "author": "LaDAO",
-  "license": "GNU AFFERO GENERAL PUBLIC LICENSE",
-  "private": null,
   "devDependencies": {
     "@ethersproject/abi": "^5.4.7",
     "@ethersproject/providers": "^5.4.7",
@@ -27,6 +25,7 @@
   },
   "dependencies": {
     "@connext/sdk": "^2.1.2",
+    "@openzeppelin/upgrades-core": "^1.30.0",
     "@pythnetwork/pyth-evm-js": "^1.20.1",
     "@pythnetwork/pyth-sdk-solidity": "^2.2.1",
     "@redstone-finance/evm-connector": "^0.0.22",
