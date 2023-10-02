@@ -4,6 +4,8 @@ out = "out"
 libs = ["lib"]
 optimizer = true
 optimizer_runs = 10000
+build_info = true
+extra_output = ["storageLayout"]
 
 [fmt]
 line_length = 100
