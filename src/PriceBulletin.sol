@@ -1,7 +1,15 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 pragma solidity 0.8.17;
 
-import {IPriceBulletin} from "./interfaces/IPriceBulletin.sol";
+/**
+ * @title PriceBulletin
+ *
+ * @notice Stores latest price feed round data and provides update methods
+ * to rewards update caller.
+ * This contract uses a common read methods from Chainlink interface.
+ */
+
+import {IPriceBulletin, IAggregatorV3, IXReceiver} from "./interfaces/IPriceBulletin.sol";
 import {ECDSA, BulletinSigning} from "./BulletinSigning.sol";
 import {IERC20, SafeERC20} from "openzeppelin-contracts/token/ERC20/utils/SafeERC20.sol";
 import {OwnableUpgradeable} from "openzeppelin-contracts-upgradeable/access/OwnableUpgradeable.sol";
@@ -56,27 +64,46 @@ contract PriceBulletin is IPriceBulletin, UUPSUpgradeable, OwnableUpgradeable, B
     __Ownable_init();
   }
 
+  /**
+   * @inheritdoc IAggregatorV3
+   */
   function decimals() external pure returns (uint8) {
     return 8;
   }
 
+  /**
+   * @inheritdoc IAggregatorV3
+   */
   function description() external pure returns (string memory) {
     return "priceBulletin MXN / USD";
   }
 
+  /**
+   * @inheritdoc IAggregatorV3
+   */
   function version() external pure returns (string memory) {
     return VERSION;
   }
 
+  /**
+   * @notice Returns only `answer` from `latestRoundData()`
+   * This method is kept for compatibility with older contracts.
+   */
   function latestAnswer() external view returns (int256) {
     (, int256 answer,,,) = latestRoundData();
     return answer;
   }
 
+  /**
+   * @notice Returns the latest `roundId`
+   */
   function latestRound() public view returns (uint80) {
     return _recordedRoundInfo.roundId;
   }
 
+  /**
+   * @inheritdoc IAggregatorV3
+   */
   function latestRoundData()
     public
     view
@@ -103,6 +130,9 @@ contract PriceBulletin is IPriceBulletin, UUPSUpgradeable, OwnableUpgradeable, B
     }
   }
 
+  /**
+   * @inheritdoc IXReceiver
+   */
   function xReceive(
     bytes32 transferId,
     uint256,
@@ -194,6 +224,9 @@ contract PriceBulletin is IPriceBulletin, UUPSUpgradeable, OwnableUpgradeable, B
     _distributeReward(msg.sender, receiver, token, amount);
   }
 
+  /**
+   * @inheritdoc IPriceBulletin
+   */
   function setAuthorizedPublisher(address publisher, bool set) external onlyOwner {
     if (publisher == address(0)) {
       revert PriceBulletin__invalidInput();
@@ -226,6 +259,20 @@ contract PriceBulletin is IPriceBulletin, UUPSUpgradeable, OwnableUpgradeable, B
     emit SetReward(address(token), amount);
   }
 
+  /**
+   * @notice Returns true or false and error if data is valid and signer is
+   * an allowed publisher
+   *
+   * @param round struct data
+   * @param v signature value
+   * @param r signature value
+   * @param s signature value
+   *
+   * @dev Requirements:
+   * - Must never revert
+   * - Must check signer is a valid publisher
+   * - Must check round id is the next round
+   */
   function _checkValidBulletinUpdateData(
     RoundData memory round,
     uint8 v,
@@ -341,9 +388,15 @@ contract PriceBulletin is IPriceBulletin, UUPSUpgradeable, OwnableUpgradeable, B
     presumedSigner = ECDSA.recover(digest, v, r, s);
   }
 
+  /**
+   * @inheritdoc BulletinSigning
+   */
   function _getDomainSeparator() internal pure override returns (bytes32) {
     return CUICA_DOMAIN;
   }
 
+  /**
+   * @inheritdoc UUPSUpgradeable
+   */
   function _authorizeUpgrade(address newImplementation) internal override onlyOwner {}
 }

@@ -13,10 +13,10 @@ import {IXReceiver} from "./connext/IConnext.sol";
 interface IPriceBulletin is IAggregatorV3, IXReceiver {
   /**
    * @notice Sets the authorized publisher of a `RoundData` as valid or not.
-   * 
+   *
    * @param publisher address
    * @param set true if allowed, false if not
-   * 
+   *
    * @dev Requirements:
    * - Must be restricted to an admin or owner role
    * - Must check a change is happening in state for the `set` argument
