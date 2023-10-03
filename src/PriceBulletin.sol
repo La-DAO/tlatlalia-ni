@@ -34,6 +34,13 @@ contract PriceBulletin is IPriceBulletin, UUPSUpgradeable, OwnableUpgradeable, B
 
   mapping(address => bool) public authorizedPublishers;
 
+  ///@notice Maps `user`  => `reward token` => `amount` of pending rewards
+  mapping(address => mapping(IERC20 => uint256)) public rewards;
+
+  IERC20 public rewardToken;
+  
+  uint256 public rewardAmount;
+
   /// @custom:oz-upgrades-unsafe-allow constructor
   constructor() {
     _disableInitializers();
