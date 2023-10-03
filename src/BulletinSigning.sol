@@ -13,7 +13,7 @@ import {RoundData} from "./libraries/AppStorage.sol";
 import {ECDSA} from "openzeppelin-contracts/utils/cryptography/ECDSA.sol";
 
 abstract contract BulletinSigning {
-  string internal constant VERSION = "v0.0.1";
+  string internal constant VERSION = "v1.0.0";
 
   bytes32 internal constant ROUNDATA_TYPEHASH = keccak256(
     "RoundData(uint80 roundId,int256 answer,uint256 startedAt,uint256 updatedAt,uint80 answeredInRound)"
