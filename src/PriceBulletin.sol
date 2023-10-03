@@ -11,7 +11,10 @@ contract PriceBulletin is IPriceBulletin, UUPSUpgradeable, OwnableUpgradeable, B
   /// Events
   event BulletinUpdated(uint80 rounId, int256 answer);
   event FailedBulletingUpdate(string err);
+  event EarnedReward(address indexed owner, address indexed token, uint256 amount);
+  event ClaimedReward(address indexed owner, address indexed token, uint256 amount);
   event SetAuthorizedPublisher(address publisher, bool status);
+  event SetReward(address token, uint256 amount);
 
   /// Errors
   error PriceBulletin__setter_invalidInput();
