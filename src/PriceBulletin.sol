@@ -187,6 +187,71 @@ contract PriceBulletin is IPriceBulletin, UUPSUpgradeable, OwnableUpgradeable, B
   }
 
   /**
+   * @dev Logs earned rewards.
+   *
+   * @param user earning rewards
+   * @param token of rewards
+   * @param amount of rewards
+   *
+   * Requirements:
+   * - Must emit a `EarnedReward` event
+   * - Must revert if user, token or amount are zero
+   * - Must update `rewards` state
+   */
+  function _logEarnedReward(address user, IERC20 token, uint256 amount) internal {
+    _checkRewardTokenAndAmount(token, amount);
+    rewards[user][token] += amount;
+    emit EarnedReward(user, address(token), amount);
+  }
+
+  /**
+   * @dev Distributes a claim for rewards.
+   *
+   * @param user owning the rewards
+   * @param receiver of the claimed rewards
+   * @param token of reward
+   * @param amount of reward
+   *
+   * Requirements:
+   * - Must emit a `ClaimedRewards` event
+   * - Must revert if receiver, token or amount are zero.
+   * - Must revert if `amount` is greater than corresponding `rewards` state
+   * - Must update `rewards` state before sending tokens.
+   * - Must use "Safe" transfer method.
+   */
+  function _distributeReward(address user, address receiver, IERC20 token, uint256 amount) internal {
+    _checkRewardTokenAndAmount(token, amount);
+
+    uint256 pendingRewards = rewards[user][token];
+
+    if (pendingRewards < amount) {
+      revert PriceBulletin__distributeReward_notEnoughPendingRewards();
+    }
+
+    rewards[user][token] = pendingRewards - amount;
+
+    if (token.balanceOf(address(this)) < amount) {
+      revert PriceBulletin__distributeReward_notEnoughRewardBalance();
+    }
+
+    token.safeTransfer(receiver, amount);
+
+    emit ClaimedReward(user, address(token), amount);
+  }
+
+  /**
+   * @dev Reverts if inputs are zero.
+   *
+   * @param token to check
+   * @param amount to check
+   */
+  function _checkRewardTokenAndAmount(IERC20 token, uint256 amount) private pure {
+    if (address(token) == address(0) || amount == 0) {
+      revert PriceBulletin__checkRewardTokenAndAmount_noRewardTokenOrAmount();
+    }
+  }
+
+  /**
    * @dev Returns the signer of the`structHash`.
    *
    * @param structHash of data
