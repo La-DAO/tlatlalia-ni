@@ -149,6 +149,7 @@ contract PriceBulletin is IPriceBulletin, UUPSUpgradeable, OwnableUpgradeable, B
    * @dev Requirements:
    * - Must emit a `SetReward` event
    * - Must revert if token or amount are zero
+   * - Must be restricted to `onlyOwner`
    */
   function setReward(IERC20 token, uint256 amount) public onlyOwner {
     _checkRewardTokenAndAmount(token, amount);
