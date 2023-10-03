@@ -139,6 +139,24 @@ contract PriceBulletin is IPriceBulletin, UUPSUpgradeable, OwnableUpgradeable, B
     emit SetAuthorizedPublisher(publisher, set);
   }
 
+  /**
+   * @notice Sets the active `rewardToken` and `rewardAmount` for updating
+   * this {PriceBulletin} contract.
+   *
+   * @param token of reward
+   * @param amount of reward
+   *
+   * @dev Requirements:
+   * - Must emit a `SetReward` event
+   * - Must revert if token or amount are zero
+   */
+  function setReward(IERC20 token, uint256 amount) public onlyOwner {
+    _checkRewardTokenAndAmount(token, amount);
+    rewardToken = token;
+    rewardAmount = amount;
+    emit SetReward(address(token), amount);
+  }
+
   function _checkValidBulletinUpdateData(
     RoundData memory round,
     uint8 v,
