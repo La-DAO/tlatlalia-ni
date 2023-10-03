@@ -112,6 +112,14 @@ contract PriceBulletin is IPriceBulletin, UUPSUpgradeable, OwnableUpgradeable, B
     return abi.encode(transferId);
   }
 
+  /**
+   * @notice Updates the price bulletin with latest round and sets `_recordedRoundInfo`.
+   * The most gas efficient to update price bulletin with no log or claim for rewards.
+   *
+   * @param callData encoded RounData with v,r,s signature values
+   *
+   * @dev Function restricts using the same or old RoundData.
+   */
   function updateBulletin(bytes memory callData) public returns (bool success) {
     (RoundData memory round, uint8 v, bytes32 r, bytes32 s) =
       abi.decode(callData, (RoundData, uint8, bytes32, bytes32));
