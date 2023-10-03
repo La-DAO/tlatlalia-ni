@@ -1,6 +1,12 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 pragma solidity 0.8.17;
 
+/**
+ * @title IPriceBulletin
+ *
+ * @notice Defines the common interfaces for PriceBulletin
+ */
+
 import {IAggregatorV3} from "./chainlink/IAggregatorV3.sol";
 import {IXReceiver} from "./connext/IConnext.sol";
 
