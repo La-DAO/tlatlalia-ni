@@ -3,11 +3,14 @@ pragma solidity 0.8.17;
 
 import {IPriceBulletin} from "./interfaces/IPriceBulletin.sol";
 import {ECDSA, BulletinSigning} from "./BulletinSigning.sol";
+import {IERC20, SafeERC20} from "openzeppelin-contracts/token/ERC20/utils/SafeERC20.sol";
 import {OwnableUpgradeable} from "openzeppelin-contracts-upgradeable/access/OwnableUpgradeable.sol";
 import {UUPSUpgradeable} from "openzeppelin-contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 import {RoundData} from "./libraries/AppStorage.sol";
 
 contract PriceBulletin is IPriceBulletin, UUPSUpgradeable, OwnableUpgradeable, BulletinSigning {
+  using SafeERC20 for IERC20;
+
   /// Events
   event BulletinUpdated(uint80 rounId, int256 answer);
   event FailedBulletingUpdate(string err);
@@ -17,7 +20,10 @@ contract PriceBulletin is IPriceBulletin, UUPSUpgradeable, OwnableUpgradeable, B
   event SetReward(address token, uint256 amount);
 
   /// Errors
-  error PriceBulletin__setter_invalidInput();
+  error PriceBulletin__checkRewardTokenAndAmount_noRewardTokenOrAmount();
+  error PriceBulletin__distributeReward_notEnoughPendingRewards();
+  error PriceBulletin__distributeReward_notEnoughRewardBalance();
+  error PriceBulletin__invalidInput();
   error PriceBulletin__setter_noChange();
 
   bytes32 private constant CUICA_DOMAIN = keccak256(
@@ -38,7 +44,7 @@ contract PriceBulletin is IPriceBulletin, UUPSUpgradeable, OwnableUpgradeable, B
   mapping(address => mapping(IERC20 => uint256)) public rewards;
 
   IERC20 public rewardToken;
-  
+
   uint256 public rewardAmount;
 
   /// @custom:oz-upgrades-unsafe-allow constructor
@@ -134,9 +140,63 @@ contract PriceBulletin is IPriceBulletin, UUPSUpgradeable, OwnableUpgradeable, B
     }
   }
 
+  /**
+   * @notice Same as `updateBulletin()`, but logging a claim for rewards.
+   * Rewards earned by calling this method can be claimed at a later point using
+   * the `claimRewards()` method.
+   *
+   * @param callData encoded RounData with v,r,s signature values
+   *
+   * @dev Reverts if no reward settings.
+   */
+  function updateBulletinWithRewardLog(bytes memory callData) public returns (bool success) {
+    if (updateBulletin(callData)) {
+      _logEarnedReward(msg.sender, rewardToken, rewardAmount);
+      success = true;
+    }
+  }
+
+  /**
+   * @notice Same as `updateBulletin()`, but logs and simultaneaously claims reward.
+   *
+   * @param callData encoded RounData with v,r,s signature values
+   * @param receiver of the claimed reward
+   *
+   * @dev Reverts if no reward settings or reward balance is available.
+   */
+  function updateBulletinWithRewardClaim(
+    bytes memory callData,
+    address receiver
+  )
+    public
+    returns (bool success)
+  {
+    if (updateBulletinWithRewardLog(callData)) {
+      _distributeReward(msg.sender, receiver, rewardToken, rewardAmount);
+      success = true;
+    }
+  }
+
+  /**
+   * @notice Claims earned rewards for `msg.sender` and sends them to `receiver`.
+   *
+   * @param receiver of the claim rewards
+   * @param token of reward
+   * @param amount of reward to claim
+   *
+   * @dev Requirements:
+   * - Must revert if receiver, token or amount are zero.
+   */
+  function claimRewards(address receiver, IERC20 token, uint256 amount) public {
+    if (receiver == address(0)) {
+      revert PriceBulletin__invalidInput();
+    }
+    _distributeReward(msg.sender, receiver, token, amount);
+  }
+
   function setAuthorizedPublisher(address publisher, bool set) external onlyOwner {
     if (publisher == address(0)) {
-      revert PriceBulletin__setter_invalidInput();
+      revert PriceBulletin__invalidInput();
     }
     if (authorizedPublishers[publisher] == set) {
       revert PriceBulletin__setter_noChange();
