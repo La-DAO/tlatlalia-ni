@@ -295,7 +295,9 @@ contract PriceBulletinUnitTests is Test {
     } else {
       vm.prank(USER);
       bulletin.claimRewards(receiver, IERC20(rewardToken), claims_ * rewardAmount);
-      assertEq(IERC20(rewardToken).balanceOf(address(bulletin)), (updates_ - claims_) * rewardAmount);
+      assertEq(
+        IERC20(rewardToken).balanceOf(address(bulletin)), (updates_ - claims_) * rewardAmount
+      );
       assertEq(IERC20(rewardToken).balanceOf(receiver), claims_ * rewardAmount);
     }
   }
