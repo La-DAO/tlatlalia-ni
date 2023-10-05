@@ -155,6 +155,10 @@ contract PriceBulletin is IPriceBulletin, UUPSUpgradeable, OwnableUpgradeable, B
    * @param callData encoded RounData with v,r,s signature values
    *
    * @dev Function restricts using the same or old RoundData.
+   * Requirements:
+   * - Must never revert provided the `callData` is properly feeded for decoding
+   * - Must emit a `BulletinUpdated` event if updating bulletin is succesfull
+   * - Must emit a `FailedBulletinUpdate` event if updated bulletin failed
    */
   function updateBulletin(bytes memory callData) public returns (bool success) {
     (RoundData memory round, uint8 v, bytes32 r, bytes32 s) =
@@ -166,7 +170,7 @@ contract PriceBulletin is IPriceBulletin, UUPSUpgradeable, OwnableUpgradeable, B
       success = true;
       emit BulletinUpdated(round.roundId, round.answer);
     } else {
-      emit FailedBulletingUpdate(err);
+      emit FailedBulletinUpdate(err);
     }
   }
 
@@ -177,7 +181,8 @@ contract PriceBulletin is IPriceBulletin, UUPSUpgradeable, OwnableUpgradeable, B
    *
    * @param callData encoded RounData with v,r,s signature values
    *
-   * @dev Reverts if no reward settings.
+   * @dev Requirements:
+   * - Must revert if no reward token or amount are set
    */
   function updateBulletinWithRewardLog(bytes memory callData) public returns (bool success) {
     if (updateBulletin(callData)) {
@@ -281,7 +286,7 @@ contract PriceBulletin is IPriceBulletin, UUPSUpgradeable, OwnableUpgradeable, B
    * @dev Requirements:
    * - Must never revert
    * - Must check signer is a valid publisher
-   * - Must check round id is the next round
+   * - Must check round id is the next or higher round
    */
   function _checkValidBulletinUpdateData(
     RoundData memory round,
