@@ -4,8 +4,6 @@ pragma solidity 0.8.17;
 /**
  * @title IConnext
  *
- * @author Fujidao Labs
- *
  * @notice Defines the common interfaces and data types used
  * to interact with Connext Amarok.
  */
@@ -66,6 +64,17 @@ struct ExecuteArgs {
 }
 
 interface IConnext {
+  /**
+   * @notice Initiates a cross-chain transfer of funds, calldata, and/or various named properties.
+   *
+   * @param _destination the destination chain's Domain ID
+   * @param _to  target address on the destination chain
+   * @param _asset contract address of the asset to be bridged
+   * @param _delegate address with rights to update slippage tolerance
+   * @param _amount  amount of tokens to bridge specified in wei units
+   * @param _slippage maximum slippage a user is willing to take, in BPS (e.g. 3 = 0.03%)
+   * @param _callData to send
+   */
   function xcall(
     uint32 _destination,
     address _to,
@@ -79,16 +88,43 @@ interface IConnext {
     payable
     returns (bytes32);
 
+  /**
+   * @notice Called on a destination domain to disburse correct assets to end
+   * recipient and execute any included calldata
+   *
+   * @param _args ExecuteArgs arguments
+   */
   function execute(ExecuteArgs calldata _args)
     external
     returns (bool success, bytes memory returnData);
 
+  /**
+   * @notice Call this function on the origin domain to increase the relayer fee for a transfer
+   *
+   * @param transferId unique identifier of the crosschain transaction
+   */
   function bumpTransfer(bytes32 transferId) external payable;
 
+  /**
+   * @notice Allows a user-specified account (delegate in xcall) to update the slippage
+   *
+   * @param _params TransferInfo associated with the transfer
+   * @param _slippage the updated slippage
+   */
   function forceUpdateSlippage(TransferInfo calldata _params, uint256 _slippage) external;
 }
 
 interface IXReceiver {
+  /**
+   * @notice Interface that the Connext contracts call into on the _to address specified during xcall.
+   *
+   * @param _transferId unique id of the xchain transaction
+   * @param _amount of token
+   * @param _asset address of token
+   * @param _originSender address of the contract or EOA that called xcall
+   * @param _origin domain ID of the chain that the transaction is coming from
+   * @param _callData data passed into xcall on the origin chain
+   */
   function xReceive(
     bytes32 _transferId,
     uint256 _amount,

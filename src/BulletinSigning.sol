@@ -1,11 +1,19 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 pragma solidity 0.8.17;
 
+/**
+ * @title BulletinSigning
+ *
+ * @notice Provides domain seperator for signing RoundData.
+ * This contract is inspired but simplified from Openzeppelin EIP712 to be
+ * compatible in Diamond contract.
+ */
+
 import {RoundData} from "./libraries/AppStorage.sol";
 import {ECDSA} from "openzeppelin-contracts/utils/cryptography/ECDSA.sol";
 
 abstract contract BulletinSigning {
-  string internal constant VERSION = "v0.0.1";
+  string internal constant VERSION = "v1.0.0";
 
   bytes32 internal constant ROUNDATA_TYPEHASH = keccak256(
     "RoundData(uint80 roundId,int256 answer,uint256 startedAt,uint256 updatedAt,uint80 answeredInRound)"
@@ -15,7 +23,9 @@ abstract contract BulletinSigning {
   bytes32 internal constant TYPEHASH =
     keccak256("EIP712Domain(string name,string version,address verifyingContract,bytes32 salt)");
 
-  /// @notice Returns the struct hash of `latestRoundData`.
+  /**
+   * @notice Returns the struct hash of `latestRoundData`.
+   */
   function getStructHashRoundData(RoundData memory lastRoundData) public pure returns (bytes32) {
     return keccak256(
       abi.encode(
