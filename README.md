@@ -1,8 +1,6 @@
 
 ### Price Bulletin Contract
 
-!THIS NEEDS TO BE REDEPLOYED   
-
 |Contract Name | Deployed Address                         | Chains                                                                      |Test Chains            |
 |--------------|------------------------------------------|-----------------------------------------------------------------------------|-----------------------|
 |PriceBulletin |0x94C82325a2B26f27AEb08B936331c8485a988634|Eth, Arbitrum, Optimism, Gnosis, Polygon, PolygonZkevm, Base, Linea          |Goerli, Mumbai, Sepolia|
