@@ -3,6 +3,7 @@ pragma solidity 0.8.17;
 
 import {Test, console} from "forge-std/Test.sol";
 import {PriceBulletin, RoundData, IERC20} from "../../src/PriceBulletin.sol";
+import {MockERC20} from "../mocks/MockERC20.sol";
 import {ERC1967Proxy} from "../../src/libraries/openzeppelin/ERC1967Proxy.sol";
 
 contract PriceBulletinUnitTests is Test {
@@ -27,12 +28,16 @@ contract PriceBulletinUnitTests is Test {
 
   RoundData public testRound = RoundData(40, 5820537, 1695414655, 1695414655, 40);
 
-  address public rewardToken = 0xa411c9Aa00E020e4f88Bc19996d29c5B7ADB4ACf;
+  MockERC20 public mockToken;
+  address public rewardToken;
   uint256 public rewardAmount = 250e18;
 
   function setUp() public {
     vm.label(OWNER, "owner");
     vm.label(PUBLISHER, "publisher");
+
+    mockToken = new MockERC20("MockToken", "MKT");
+    rewardToken = address(mockToken);
 
     vm.startPrank(OWNER);
     address implementation = address(new PriceBulletin());
@@ -201,7 +206,7 @@ contract PriceBulletinUnitTests is Test {
   )
     public
   {
-    vm.assume(randoPK >0 && randoPK != PUBLISHER_PK);
+    vm.assume(randoPK > 0 && randoPK != PUBLISHER_PK);
     set_reward(rewardToken, rewardAmount);
     (uint8 v, bytes32 r, bytes32 s) = sign_round(round, randoPK);
     bytes memory callData = abi.encode(round, v, r, s);
@@ -209,6 +214,90 @@ contract PriceBulletinUnitTests is Test {
     bulletin.updateBulletinWithRewardLog(callData);
     uint256 accumulatedRewards = bulletin.getRewards(USER, rewardToken);
     assertEq(accumulatedRewards, 0);
+  }
+
+  function test_UpdateBulletinWithRewardClaim() public {
+    set_reward(rewardToken, rewardAmount);
+    load_reward(rewardToken, rewardAmount);
+
+    assertEq(IERC20(rewardToken).balanceOf(USER), 0);
+
+    (uint8 v, bytes32 r, bytes32 s) = sign_round(testRound, PUBLISHER_PK);
+
+    bytes memory callData = abi.encode(testRound, v, r, s);
+    vm.expectEmit(true, true, false, true);
+    emit ClaimedReward(USER, rewardToken, rewardAmount);
+    vm.prank(USER);
+    bulletin.updateBulletinWithRewardClaim(callData, USER);
+
+    uint256 accumulatedRewards = bulletin.getRewards(USER, rewardToken);
+    assertEq(accumulatedRewards, 0);
+    assertEq(IERC20(rewardToken).balanceOf(USER), rewardAmount);
+  }
+
+  function test_UpdateBulletinWithRewardClaimButNoRewardsSet() public {
+    (uint8 v, bytes32 r, bytes32 s) = sign_round(testRound, PUBLISHER_PK);
+
+    bytes memory callData = abi.encode(testRound, v, r, s);
+    vm.expectRevert(
+      PriceBulletin.PriceBulletin__checkRewardTokenAndAmount_noRewardTokenOrAmount.selector
+    );
+    vm.prank(USER);
+    bulletin.updateBulletinWithRewardClaim(callData, USER);
+
+    uint256 accumulatedRewards = bulletin.getRewards(USER, rewardToken);
+    assertEq(accumulatedRewards, 0);
+  }
+
+  function test_UpdateBulletinWithRewardClaimButNoRewardsAvaiable() public {
+    set_reward(rewardToken, rewardAmount);
+
+    (uint8 v, bytes32 r, bytes32 s) = sign_round(testRound, PUBLISHER_PK);
+
+    bytes memory callData = abi.encode(testRound, v, r, s);
+    vm.expectRevert(PriceBulletin.PriceBulletin__distributeReward_notEnoughRewardBalance.selector);
+    vm.prank(USER);
+    bulletin.updateBulletinWithRewardClaim(callData, USER);
+
+    uint256 accumulatedRewards = bulletin.getRewards(USER, rewardToken);
+    assertEq(accumulatedRewards, 0);
+  }
+
+  function test_claimRewards(address receiver, uint8 updates, uint8 claims) public {
+    vm.assume(receiver != address(bulletin) && claims > 0);
+    uint256 updates_ = bound(updates, 0, 10);
+    uint256 claims_ = bound(claims, 1, 10);
+
+    set_reward(rewardToken, rewardAmount);
+    load_reward(rewardToken, updates_ * rewardAmount);
+
+    RoundData memory loopingRound = testRound;
+    bytes memory callData;
+
+    for (uint80 i = 0; i < updates_; i++) {
+      loopingRound.roundId += i;
+      (uint8 v, bytes32 r, bytes32 s) = sign_round(loopingRound, PUBLISHER_PK);
+      callData = abi.encode(loopingRound, v, r, s);
+      vm.prank(USER);
+      bulletin.updateBulletinWithRewardLog(callData);
+    }
+
+    if (receiver == address(0)) {
+      vm.expectRevert(PriceBulletin.PriceBulletin__invalidInput.selector);
+      vm.prank(USER);
+      bulletin.claimRewards(receiver, IERC20(rewardToken), claims_ * rewardAmount);
+    } else if (updates_ == 0 || updates_ < claims_) {
+      vm.expectRevert(
+        PriceBulletin.PriceBulletin__distributeReward_notEnoughPendingRewards.selector
+      );
+      vm.prank(USER);
+      bulletin.claimRewards(receiver, IERC20(rewardToken), claims_ * rewardAmount);
+    } else {
+      vm.prank(USER);
+      bulletin.claimRewards(receiver, IERC20(rewardToken), claims_ * rewardAmount);
+      assertEq(IERC20(rewardToken).balanceOf(address(bulletin)), (updates_ - claims_) * rewardAmount);
+      assertEq(IERC20(rewardToken).balanceOf(receiver), claims_ * rewardAmount);
+    }
   }
 
   /// Util functions
@@ -247,5 +336,11 @@ contract PriceBulletinUnitTests is Test {
   function set_reward(address token, uint256 reward) internal {
     vm.prank(OWNER);
     bulletin.setReward(IERC20(token), reward);
+  }
+
+  function load_reward(address token, uint256 amount) internal {
+    uint256 prevBal = IERC20(token).balanceOf(address(bulletin));
+    MockERC20(token).mint(address(bulletin), amount);
+    assertEq(IERC20(token).balanceOf(address(bulletin)), prevBal + amount);
   }
 }
