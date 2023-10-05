@@ -20,8 +20,8 @@ contract PriceBulletin is IPriceBulletin, UUPSUpgradeable, OwnableUpgradeable, B
   using SafeERC20 for IERC20;
 
   /// Events
-  event BulletinUpdated(uint80 rounId, int256 answer);
-  event FailedBulletingUpdate(string err);
+  event BulletinUpdated(uint80 indexed rounId, int256 answer);
+  event FailedBulletinUpdate(string err);
   event EarnedReward(address indexed owner, address indexed token, uint256 amount);
   event ClaimedReward(address indexed owner, address indexed token, uint256 amount);
   event SetAuthorizedPublisher(address publisher, bool status);
