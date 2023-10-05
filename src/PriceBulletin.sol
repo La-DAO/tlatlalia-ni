@@ -49,7 +49,7 @@ contract PriceBulletin is IPriceBulletin, UUPSUpgradeable, OwnableUpgradeable, B
   mapping(address => bool) public authorizedPublishers;
 
   ///@notice Maps `user`  => `reward token` => `amount` of pending rewards
-  mapping(address => mapping(IERC20 => uint256)) public rewards;
+  mapping(address => mapping(IERC20 => uint256)) private _rewards;
 
   IERC20 public rewardToken;
 
@@ -208,6 +208,16 @@ contract PriceBulletin is IPriceBulletin, UUPSUpgradeable, OwnableUpgradeable, B
   }
 
   /**
+   * @notice Returns the amount of pending rewards for specific `rewardToken` for `user`.
+   *
+   * @param user_ to check pending rewards
+   * @param rewardToken_ reward token
+   */
+  function getRewards(address user_, address rewardToken_) public view returns (uint256) {
+    return _rewards[user_][IERC20(rewardToken_)];
+  }
+
+  /**
    * @notice Claims earned rewards for `msg.sender` and sends them to `receiver`.
    *
    * @param receiver of the claim rewards
@@ -315,7 +325,7 @@ contract PriceBulletin is IPriceBulletin, UUPSUpgradeable, OwnableUpgradeable, B
    */
   function _logEarnedReward(address user, IERC20 token, uint256 amount) internal {
     _checkRewardTokenAndAmount(token, amount);
-    rewards[user][token] += amount;
+    _rewards[user][token] += amount;
     emit EarnedReward(user, address(token), amount);
   }
 
@@ -330,20 +340,20 @@ contract PriceBulletin is IPriceBulletin, UUPSUpgradeable, OwnableUpgradeable, B
    * Requirements:
    * - Must emit a `ClaimedRewards` event
    * - Must revert if receiver, token or amount are zero.
-   * - Must revert if `amount` is greater than corresponding `rewards` state
-   * - Must update `rewards` state before sending tokens.
+   * - Must revert if `amount` is greater than corresponding `_rewards` state
+   * - Must update `_rewards` state before sending tokens.
    * - Must use "Safe" transfer method.
    */
   function _distributeReward(address user, address receiver, IERC20 token, uint256 amount) internal {
     _checkRewardTokenAndAmount(token, amount);
 
-    uint256 pendingRewards = rewards[user][token];
+    uint256 pendingRewards = _rewards[user][token];
 
     if (pendingRewards < amount) {
       revert PriceBulletin__distributeReward_notEnoughPendingRewards();
     }
 
-    rewards[user][token] = pendingRewards - amount;
+    _rewards[user][token] = pendingRewards - amount;
 
     if (token.balanceOf(address(this)) < amount) {
       revert PriceBulletin__distributeReward_notEnoughRewardBalance();
