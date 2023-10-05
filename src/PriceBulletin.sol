@@ -233,9 +233,6 @@ contract PriceBulletin is IPriceBulletin, UUPSUpgradeable, OwnableUpgradeable, B
    * - Must revert if receiver, token or amount are zero.
    */
   function claimRewards(address receiver, IERC20 token, uint256 amount) public {
-    if (receiver == address(0)) {
-      revert PriceBulletin__invalidInput();
-    }
     _distributeReward(msg.sender, receiver, token, amount);
   }
 
@@ -329,6 +326,9 @@ contract PriceBulletin is IPriceBulletin, UUPSUpgradeable, OwnableUpgradeable, B
    * - Must update `rewards` state
    */
   function _logEarnedReward(address user, IERC20 token, uint256 amount) internal {
+    if (user == address(0)) {
+      revert PriceBulletin__invalidInput();
+    }
     _checkRewardTokenAndAmount(token, amount);
     _rewards[user][token] += amount;
     emit EarnedReward(user, address(token), amount);
@@ -350,6 +350,9 @@ contract PriceBulletin is IPriceBulletin, UUPSUpgradeable, OwnableUpgradeable, B
    * - Must use "Safe" transfer method.
    */
   function _distributeReward(address user, address receiver, IERC20 token, uint256 amount) internal {
+    if (receiver == address(0)) {
+      revert PriceBulletin__invalidInput();
+    }
     _checkRewardTokenAndAmount(token, amount);
 
     uint256 pendingRewards = _rewards[user][token];
