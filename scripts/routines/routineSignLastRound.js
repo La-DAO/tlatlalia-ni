@@ -47,8 +47,8 @@ async function routineSignLastRound(chainName='localhost') {
   const structHash = await cuicaFacet.getStructHashLastRoundData()
   console.log(`${logNewLine('INFO')} Signing digest RoundId: ${lastRoundInfo.roundId.toString()} ...`)
 
-  if (!process.env.PRIVATE_KEY) {
-    throw "Please set PRIVATE_KEY in .env"
+  if (!process.env.PUBLISHER_KEY) {
+    throw "Please set PUBLISHER_KEY in .env"
   }
 
   const digest = await cuicaFacet.getHashTypedDataV4Digest(structHash)
@@ -63,6 +63,7 @@ async function routineSignLastRound(chainName='localhost') {
     v: v,
     r: r,
     s: s,
+    info: lastRoundInfo,
     callData: ethers.utils.defaultAbiCoder.encode(
       [
         "tuple(uint80, int256, uint, uint, uint80)",

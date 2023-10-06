@@ -16,10 +16,12 @@ const TEST = determineTest()
  * @param {string} chainName 
  */
 async function routineUpdateBulletin(chainName='localhost') {
-  const {digest, v, r, s, callData} = await routineSignLastRound(chainName)
+  const {digest, v, r, s, info, callData} = await routineSignLastRound(chainName)
 
   const bulletinAbi = [
-    'function xReceive(bytes32, uint, address, address, uint32, bytes)',
+    'function updateBulletin(bytes)',
+    'function updateBulletinWithRewardLog(bytes)',
+    'function updateBulletinWithRewardClaim(bytes, address)',
     'function latestRoundData() view returns (uint, int256, uint, uint, uint)',
   ]
   let bulletin
@@ -41,7 +43,8 @@ async function routineUpdateBulletin(chainName='localhost') {
   const tx = await bulletin.updateBulletin(
     callData
   )
-  await tx.wait()
+  const rtx = await tx.wait()
+  console.log(rtx) // debugging
   let lastRoundInfo = await bulletin.latestRoundData()
   lastRoundInfo = {
     roundId: lastRoundInfo[0],
@@ -50,7 +53,12 @@ async function routineUpdateBulletin(chainName='localhost') {
     updatedAt: lastRoundInfo[3],
     answeredInRound: lastRoundInfo[4]
   }
-  console.log(`${logNewLine('INFO')} Successfully updated {PriceBulletin}: latestAnswer(): ${lastRoundInfo.answer.toString()}`)
+  const updateResult = info.roundId == lastRoundInfo.roundId ? true : false;
+  if (updateResult) {
+    console.log(`${logNewLine('INFO')} Successfully updated {PriceBulletin}: latestAnswer(): ${lastRoundInfo.answer.toString()}`)
+  } else {
+    console.log(`${logNewLine('WARN')} !!! Failed to update {PriceBulletin}: roundId: ${info.roundId.toString()}`)
+  }
 }
 
 // We recommend this pattern to be able to use async/await everywhere
