@@ -4,6 +4,7 @@ node_modules
 # Foundry files
 cache
 out
+broadcast
 
 # Hardhat files
 artifacts
