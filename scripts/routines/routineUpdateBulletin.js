@@ -4,7 +4,8 @@ const {
   getLocalhostJsonRPCProvider,
   logNewLine,
   getEnvWSigner,
-  getChainProvider
+  getChainProvider,
+  CUICA_DATA_MAINNET
 } = require('../utilsCuica')
 const { routineSignLastRound } = require('./routineSignLastRound')
 
@@ -24,25 +25,20 @@ async function routineUpdateBulletin(chainName='localhost') {
   let bulletin
   if (TEST) {
     bulletin = new ethers.Contract(
-      '0x94C82325a2B26f27AEb08B936331c8485a988634',
+      CUICA_DATA_MAINNET.gnosis.priceBulletin,
       bulletinAbi,
       getEnvWSigner(getLocalhostJsonRPCProvider())
     )
   } else {
     bulletin = new ethers.Contract(
-      '0x94C82325a2B26f27AEb08B936331c8485a988634',
+      CUICA_DATA_MAINNET[chainName].priceBulletin,
       bulletinAbi,
       getEnvWSigner(getChainProvider(chainName))
     )
   }
 
   console.log(`${logNewLine('INFO')} Updating PriceBulletin ...`)
-  const tx = await bulletin.xReceive(
-    digest,
-    0,
-    ethers.constants.AddressZero,
-    ethers.constants.AddressZero,
-    0,
+  const tx = await bulletin.updateBulletin(
     callData
   )
   await tx.wait()
