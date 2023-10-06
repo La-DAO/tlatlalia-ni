@@ -17,8 +17,11 @@ contract DeployPriceBulletin is Script {
     vm.startBroadcast();
     address implementation = address(new PriceBulletin());
     console.log("Deployed implementation {PriceBulletin}:", implementation);
-    bytes memory _data = abi.encodeWithSelector(PriceBulletin.initialize.selector);
-    address proxyBulletin = address(new ERC1967Proxy(implementation, _data));
+    bytes memory data_ = abi.encodeWithSelector(PriceBulletin.initialize.selector);
+    bytes memory contructorArgs = abi.encode(implementation, data_);
+    console.log("Proxy constructor arguments:");
+    console.logBytes(contructorArgs);
+    address proxyBulletin = address(new ERC1967Proxy(implementation, data_));
     console.log("Proxy for {PriceBulletin} deployed:", proxyBulletin);
     PriceBulletin(proxyBulletin).setAuthorizedPublisher(PUBLISHER, true);
     vm.stopBroadcast();
