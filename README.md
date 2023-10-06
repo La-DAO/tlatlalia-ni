@@ -3,9 +3,11 @@
 
    
 
-|Contract Name | Deployed Address                         | Chains                                                                      |Test Chains            |
-|--------------|------------------------------------------|-----------------------------------------------------------------------------|-----------------------|
-|PriceBulletin |0x94C82325a2B26f27AEb08B936331c8485a988634|Eth, Arbitrum, Optimism, Gnosis, Polygon, PolygonZkevm, Base, Linea          |Goerli, Mumbai, Sepolia|
+|Contract Name | Deployed Address                         | Chains                                                                 |Test Chains            |
+|--------------|------------------------------------------|------------------------------------------------------------------------|-----------------------|
+|PriceBulletin |0xada8c0eaba7ad722f4b5555b216f8f11a81593d8|Eth, Arbitrum, Optimism, Gnosis, BSC, PolygonZkevm, Base, Linea         |Goerli, Mumbai, Sepolia|
+|PriceBulletin |0x996d7b03d1537524bb20273713385c23944ff2ec|Polygon,                                                                |N/A  |
+
 
 ### Diamond and Facets
 
