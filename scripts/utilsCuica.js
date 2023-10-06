@@ -110,44 +110,44 @@ function getChainProvider(chainName) {
 
 const CUICA_DATA_MAINNET = {
   ethereum: {
-    priceBulletin: "0x94C82325a2B26f27AEb08B936331c8485a988634",
+    priceBulletin: "0xada8c0eaba7ad722f4b5555b216f8f11a81593d8",
   },
   polygon: {
-    priceBulletin: "0x94C82325a2B26f27AEb08B936331c8485a988634",
+    priceBulletin: "0x996d7b03d1537524bb20273713385c23944ff2ec",
   },
   arbitrum: {
-    priceBulletin: "0x94C82325a2B26f27AEb08B936331c8485a988634",
+    priceBulletin: "0xada8c0eaba7ad722f4b5555b216f8f11a81593d8",
   },
   optimism: {
-    priceBulletin: "0x94C82325a2B26f27AEb08B936331c8485a988634",
+    priceBulletin: "0xada8c0eaba7ad722f4b5555b216f8f11a81593d8",
   },
   gnosis: {
     diamond: "0x8f78dc290e1701EC664909410661DC17E9c7b62b",
-    priceBulletin: "0x94C82325a2B26f27AEb08B936331c8485a988634",
+    priceBulletin: "0xada8c0eaba7ad722f4b5555b216f8f11a81593d8",
   },
   binance: {
-    priceBulletin: "0x94C82325a2B26f27AEb08B936331c8485a988634",
+    priceBulletin: "0xada8c0eaba7ad722f4b5555b216f8f11a81593d8",
   },
   linea: {
-    priceBulletin: "0x94C82325a2B26f27AEb08B936331c8485a988634",
+    priceBulletin: "0xada8c0eaba7ad722f4b5555b216f8f11a81593d8",
   },
   polygonzkevm: {
-    priceBulletin: "0x94C82325a2B26f27AEb08B936331c8485a988634",
+    priceBulletin: "0xada8c0eaba7ad722f4b5555b216f8f11a81593d8",
   },
   base: {
-    priceBulletin: "0x94C82325a2B26f27AEb08B936331c8485a988634",
+    priceBulletin: "0xada8c0eaba7ad722f4b5555b216f8f11a81593d8",
   }
 }
 
 const CUICA_DATA_TESTNET = {
   goerli: {
-    priceBulletin: "0x94C82325a2B26f27AEb08B936331c8485a988634",
+    priceBulletin: "0xada8c0eaba7ad722f4b5555b216f8f11a81593d8",
   },
   sepolia: {
-    priceBulletin: "0x94C82325a2B26f27AEb08B936331c8485a988634",
+    priceBulletin: "0xada8c0eaba7ad722f4b5555b216f8f11a81593d8",
   },
   mumbai: {
-    priceBulletin: "0x94C82325a2B26f27AEb08B936331c8485a988634",
+    priceBulletin: "0xada8c0eaba7ad722f4b5555b216f8f11a81593d8",
   },
 }
 
