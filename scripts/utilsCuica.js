@@ -136,10 +136,7 @@ const CUICA_DATA_MAINNET = {
   },
   base: {
     priceBulletin: "0xada8c0eaba7ad722f4b5555b216f8f11a81593d8",
-  }
-}
-
-const CUICA_DATA_TESTNET = {
+  },
   goerli: {
     priceBulletin: "0xada8c0eaba7ad722f4b5555b216f8f11a81593d8",
   },
@@ -153,7 +150,6 @@ const CUICA_DATA_TESTNET = {
 
 module.exports = {
   CUICA_DATA_MAINNET,
-  CUICA_DATA_TESTNET,
   determineTest,
   getGnosisJsonRPCProvider,
   getLocalhostJsonRPCProvider,
