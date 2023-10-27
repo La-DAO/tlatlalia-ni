@@ -34,22 +34,14 @@ contract PriceBulletin is IPriceBulletin, UUPSUpgradeable, OwnableUpgradeable, B
   error PriceBulletin__invalidInput();
   error PriceBulletin__setter_noChange();
 
-  bytes32 private constant CUICA_DOMAIN = keccak256(
-    abi.encode(
-      TYPEHASH,
-      NAMEHASH,
-      VERSIONHASH,
-      address(0x8f78dc290e1701EC664909410661DC17E9c7b62b),
-      keccak256(abi.encode(0x64))
-    )
-  );
-
   RoundData private _recordedRoundInfo;
 
-  mapping(address => bool) public authorizedPublishers;
+  address private _cuicaGnosisAddress;
 
   ///@notice Maps `user`  => `reward token` => `amount` of pending rewards
   mapping(address => mapping(IERC20 => uint256)) private _rewards;
+
+  mapping(address => bool) public authorizedPublishers;
 
   IERC20 public rewardToken;
 
@@ -60,7 +52,11 @@ contract PriceBulletin is IPriceBulletin, UUPSUpgradeable, OwnableUpgradeable, B
     _disableInitializers();
   }
 
-  function initialize() external initializer {
+  function initialize(address cuicaGnosisAddress_) external initializer {
+    if (cuicaGnosisAddress_ == address(0)) {
+      revert PriceBulletin__invalidInput();
+    }
+    _cuicaGnosisAddress = cuicaGnosisAddress_;
     __Ownable_init();
   }
 
@@ -409,8 +405,10 @@ contract PriceBulletin is IPriceBulletin, UUPSUpgradeable, OwnableUpgradeable, B
   /**
    * @inheritdoc BulletinSigning
    */
-  function _getDomainSeparator() internal pure override returns (bytes32) {
-    return CUICA_DOMAIN;
+  function _getDomainSeparator() internal view override returns (bytes32) {
+    return keccak256(
+      abi.encode(TYPEHASH, NAMEHASH, VERSIONHASH, _cuicaGnosisAddress, keccak256(abi.encode(0x64)))
+    );
   }
 
   /**
