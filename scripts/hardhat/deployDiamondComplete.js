@@ -72,7 +72,7 @@ async function deployDiamondComplete() {
     console.log('Diamond deployed:', diamond.address)
   }
 
-  setPublisherCuica(diamond.address, '0x2a895CF57ef296d1C63FE082053238D99D749774')
+  await setPublisherCuica(diamond.address, '0x2a895CF57ef296d1C63FE082053238D99D749774')
 
   // returning the address of the diamond
   return diamond.address

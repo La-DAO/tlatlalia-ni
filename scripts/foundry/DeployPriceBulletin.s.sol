@@ -8,6 +8,7 @@ import {ERC1967Proxy} from "../../src/libraries/openzeppelin/ERC1967Proxy.sol";
 
 contract DeployPriceBulletin is Script {
   address constant PUBLISHER = 0x2a895CF57ef296d1C63FE082053238D99D749774;
+  address constant DIAMOND = 0x8f78dc290e1701EC664909410661DC17E9c7b62b;
 
   /**
    * @dev Run using shell command:
@@ -17,7 +18,7 @@ contract DeployPriceBulletin is Script {
     vm.startBroadcast();
     address implementation = address(new PriceBulletin());
     console.log("Deployed implementation {PriceBulletin}:", implementation);
-    bytes memory data_ = abi.encodeWithSelector(PriceBulletin.initialize.selector);
+    bytes memory data_ = abi.encodeWithSelector(PriceBulletin.initialize.selector, DIAMOND);
     bytes memory contructorArgs = abi.encode(implementation, data_);
     console.log("Proxy constructor arguments:");
     console.logBytes(contructorArgs);
