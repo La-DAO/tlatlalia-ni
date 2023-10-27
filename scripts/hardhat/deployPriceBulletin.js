@@ -1,10 +1,13 @@
 /* global ethers */
 const { ethers } = require("hardhat")
 const { setPublisherPriceBulletin } = require("./setPublisherPriceBulletin")
+const {
+  CUICA_DATA_MAINNET
+} = require('../utilsCuica')
 
 const DEBUG = false
 
-async function deployPriceBulletin(diamondAddress) {
+async function deployPriceBulletin(diamondAddress=CUICA_DATA_MAINNET.gnosis.diamond) {
   const PriceBulletin = await ethers.getContractFactory("PriceBulletin")
   const pricebulletin = await PriceBulletin.deploy()
   await pricebulletin.deployed()
