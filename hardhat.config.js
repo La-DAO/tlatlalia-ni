@@ -19,6 +19,9 @@ module.exports = {
     },
   },
   networks: {
+    hardhat: {
+      chainId: 100,
+    },
     localhost: {
       url: "http://localhost:8545/",
       timeout: 2000000,
