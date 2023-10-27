@@ -43,8 +43,7 @@ async function routineUpdateBulletin(chainName='localhost') {
   const tx = await bulletin.updateBulletin(
     callData
   )
-  const rtx = await tx.wait()
-  console.log(rtx) // debugging
+  await tx.wait()
   let lastRoundInfo = await bulletin.latestRoundData()
   lastRoundInfo = {
     roundId: lastRoundInfo[0],
@@ -53,7 +52,7 @@ async function routineUpdateBulletin(chainName='localhost') {
     updatedAt: lastRoundInfo[3],
     answeredInRound: lastRoundInfo[4]
   }
-  const updateResult = info.roundId == lastRoundInfo.roundId ? true : false;
+  const updateResult = info.roundId.eq(lastRoundInfo.roundId);
   if (updateResult) {
     console.log(`${logNewLine('INFO')} Successfully updated {PriceBulletin}: latestAnswer(): ${lastRoundInfo.answer.toString()}`)
   } else {
