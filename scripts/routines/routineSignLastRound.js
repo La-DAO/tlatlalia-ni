@@ -6,7 +6,6 @@ const {
   getLocalhostJsonRPCProvider,
   logNewLine,
   getVoidSigner,
-  getChainProvider
 } = require('../utilsCuica')
 
 const TEST = determineTest()
@@ -52,7 +51,7 @@ async function routineSignLastRound(chainName='localhost') {
   }
 
   const digest = await cuicaFacet.getHashTypedDataV4Digest(structHash)
-  const signingKey = new ethers.utils.SigningKey(process.env.PRIVATE_KEY)
+  const signingKey = new ethers.utils.SigningKey(process.env.PUBLISHER_KEY)
   const signedDigest = signingKey.signDigest(digest)
   const { v, r, s } = ethers.utils.splitSignature(signedDigest)
 
