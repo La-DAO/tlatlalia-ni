@@ -26,6 +26,7 @@ contract PriceBulletin is IPriceBulletin, UUPSUpgradeable, OwnableUpgradeable, B
   event ClaimedReward(address indexed owner, address indexed token, uint256 amount);
   event SetAuthorizedPublisher(address publisher, bool status);
   event SetReward(address token, uint256 amount);
+  event SetCuicaGnosis(address newCuicaGnosis);
 
   /// Errors
   error PriceBulletin__checkRewardTokenAndAmount_noRewardTokenOrAmount();
@@ -36,8 +37,6 @@ contract PriceBulletin is IPriceBulletin, UUPSUpgradeable, OwnableUpgradeable, B
 
   RoundData private _recordedRoundInfo;
 
-  address private _cuicaGnosisAddress;
-
   ///@notice Maps `user`  => `reward token` => `amount` of pending rewards
   mapping(address => mapping(IERC20 => uint256)) private _rewards;
 
@@ -47,16 +46,19 @@ contract PriceBulletin is IPriceBulletin, UUPSUpgradeable, OwnableUpgradeable, B
 
   uint256 public rewardAmount;
 
+  address public cuicaGnosis;
+
   /// @custom:oz-upgrades-unsafe-allow constructor
   constructor() {
     _disableInitializers();
   }
 
-  function initialize(address cuicaGnosisAddress_) external initializer {
-    if (cuicaGnosisAddress_ == address(0)) {
+  function initialize(address cuicaGnosis_) external initializer {
+    if (cuicaGnosis_ == address(0)) {
       revert PriceBulletin__invalidInput();
     }
-    _cuicaGnosisAddress = cuicaGnosisAddress_;
+    cuicaGnosis = cuicaGnosis_;
+    emit SetCuicaGnosis(cuicaGnosis_);
     __Ownable_init();
   }
 
@@ -268,6 +270,24 @@ contract PriceBulletin is IPriceBulletin, UUPSUpgradeable, OwnableUpgradeable, B
   }
 
   /**
+   * *@notice Sets the `cuicaGnosis` used in domain separator.
+   *
+   * @param cuicaGnosis_ of diamond in Gnosis chain
+   *
+   * @dev Requirements:
+   * - Must not be zero address
+   * - Must emit a `SetCuicaGnosis` event
+   * - Must only be called by owner
+   */
+  function setCuicaGnosis(address cuicaGnosis_) public onlyOwner {
+    if (cuicaGnosis_ == address(0)) {
+      revert PriceBulletin__invalidInput();
+    }
+    cuicaGnosis = cuicaGnosis_;
+    emit SetCuicaGnosis(cuicaGnosis_);
+  }
+
+  /**
    * @notice Returns true or false and error if data is valid and signer is
    * an allowed publisher
    *
@@ -407,7 +427,7 @@ contract PriceBulletin is IPriceBulletin, UUPSUpgradeable, OwnableUpgradeable, B
    */
   function _getDomainSeparator() internal view override returns (bytes32) {
     return keccak256(
-      abi.encode(TYPEHASH, NAMEHASH, VERSIONHASH, _cuicaGnosisAddress, keccak256(abi.encode(0x64)))
+      abi.encode(TYPEHASH, NAMEHASH, VERSIONHASH, cuicaGnosis, keccak256(abi.encode(0x64)))
     );
   }
 
