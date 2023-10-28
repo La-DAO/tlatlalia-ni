@@ -3,6 +3,41 @@ const yargs = require('yargs')
 const { ethers } = require('ethers')
 const { CONNEXT_DATA } = require('./utilsConnext')
 
+const PROVIDERS = {
+  ethereum: {
+    chainId: 1,
+    providers: [process.env.RPC_MAINNET],
+  },
+  polygon: {
+    chainId: 137,
+    providers: [process.env.RPC_POLYGON]
+  },
+  arbitrum: {
+    chainId: 42161,
+    providers: [process.env.RPC_ARBITRUM]
+  },
+  optimism: {
+    chainId: 10,
+    providers: [process.env.RPC_OPTIMISM]
+  },
+  gnosis: {
+    chainId: 100,
+    providers: [process.env.RPC_GNOSIS]
+  },
+  binance: {
+    chainId: 56,
+    providers: [process.env.RPC_BINANCE]
+  },
+  mumbai: {
+    chainId: 80001,
+    providers: [process.env.RPC_MUMBAI]
+  },
+  sepolia: {
+    chainId: 11155111,
+    providers: [process.env.RPC_SEPOLIA]
+  }
+}
+
 const options = yargs
   .usage("Usage: -t <test> -c <chain>")
   .option("t", { alias: "test", describe: "Boolean: true if testing", type: "bool", demandOption: false })
@@ -96,14 +131,14 @@ function getChainProvider(chainName) {
   if (!options.chain && chainName == 'localhost') {
     jsonRPC = getLocalhostJsonRPCProvider()
   } else if (chainName != 'localhost') {
-    const url = CONNEXT_DATA[chainName].providers[0]
+    const url = PROVIDERS[chainName].providers[0]
     jsonRPC =  new ethers.providers.JsonRpcProvider(url)
   } else {
-    const url = CONNEXT_DATA[options.chain].providers[0]
+    const url = PROVIDERS[options.chain].providers[0]
     jsonRPC = new ethers.providers.JsonRpcProvider(url)
   }
   if (!jsonRPC) {
-    throw `Please set 'providers' in CONNEXT_DATA for 'chainName'`
+    throw `Please set 'providers' in PROVIDERS for 'chainName'`
   }
   return jsonRPC
 }
