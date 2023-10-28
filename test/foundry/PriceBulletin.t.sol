@@ -41,7 +41,9 @@ contract PriceBulletinUnitTests is Test {
 
     vm.startPrank(OWNER);
     address implementation = address(new PriceBulletin());
-    bytes memory _data = abi.encodeWithSelector(PriceBulletin.initialize.selector);
+    bytes memory _data = abi.encodeWithSelector(
+      PriceBulletin.initialize.selector, address(0x8f78dc290e1701EC664909410661DC17E9c7b62b)
+    );
     address proxy = address(new ERC1967Proxy(implementation, _data));
     bulletin = PriceBulletin(proxy);
     bulletin.setAuthorizedPublisher(PUBLISHER, true);

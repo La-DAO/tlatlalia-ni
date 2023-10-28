@@ -6,7 +6,6 @@ const {
   getLocalhostJsonRPCProvider,
   logNewLine,
   getVoidSigner,
-  getChainProvider
 } = require('../utilsCuica')
 
 const TEST = determineTest()
@@ -47,12 +46,12 @@ async function routineSignLastRound(chainName='localhost') {
   const structHash = await cuicaFacet.getStructHashLastRoundData()
   console.log(`${logNewLine('INFO')} Signing digest RoundId: ${lastRoundInfo.roundId.toString()} ...`)
 
-  if (!process.env.PRIVATE_KEY) {
-    throw "Please set PRIVATE_KEY in .env"
+  if (!process.env.PUBLISHER_KEY) {
+    throw "Please set PUBLISHER_KEY in .env"
   }
 
   const digest = await cuicaFacet.getHashTypedDataV4Digest(structHash)
-  const signingKey = new ethers.utils.SigningKey(process.env.PRIVATE_KEY)
+  const signingKey = new ethers.utils.SigningKey(process.env.PUBLISHER_KEY)
   const signedDigest = signingKey.signDigest(digest)
   const { v, r, s } = ethers.utils.splitSignature(signedDigest)
 
@@ -63,6 +62,7 @@ async function routineSignLastRound(chainName='localhost') {
     v: v,
     r: r,
     s: s,
+    info: lastRoundInfo,
     callData: ethers.utils.defaultAbiCoder.encode(
       [
         "tuple(uint80, int256, uint, uint, uint80)",

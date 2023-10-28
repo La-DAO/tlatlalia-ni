@@ -8,7 +8,7 @@ async function scheduler() {
   // Get the current date and time in Eastern Time (ET)
   const currentTimeET = DateTime.now().setZone('America/New_York');
 
- const nextScheduledTime = currentTimeET.plus({minute: 2})
+ const nextScheduledTime = currentTimeET.plus({seconds: 3600})
 
   // Calculate the delay in milliseconds
   const delayMillis = nextScheduledTime.diff(currentTimeET).as('milliseconds')
@@ -23,7 +23,9 @@ async function scheduler() {
 async function routineCallbacks() {
   console.log(`${logNewLine('INFO')} Begin of scheduler callbacks ...`)
   await routineUpdateAllOracles()
-  await routineUpdateBulletin('gnosis')
+  await routineUpdateBulletin('sepolia')
+  await routineUpdateBulletin('goerli')
+  await routineUpdateBulletin('mumbai')
 }
 
 scheduler()

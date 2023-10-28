@@ -3,6 +3,7 @@
 
 const { getSelectors, FacetCutAction } = require('./libraries/diamond.js')
 const { CONNEXT_DATA } = require('../utilsConnext.js')
+const { setPublisherCuica } = require('./setPublisherCuica.js')
 
 const DEBUG = false
 
@@ -70,6 +71,8 @@ async function deployDiamondComplete() {
     console.log()
     console.log('Diamond deployed:', diamond.address)
   }
+
+  await setPublisherCuica(diamond.address, '0x2a895CF57ef296d1C63FE082053238D99D749774')
 
   // returning the address of the diamond
   return diamond.address

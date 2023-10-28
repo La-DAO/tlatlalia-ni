@@ -3,9 +3,11 @@
 
    
 
-|Contract Name | Deployed Address                         | Chains                                                                      |Test Chains            |
-|--------------|------------------------------------------|-----------------------------------------------------------------------------|-----------------------|
-|PriceBulletin |0x94C82325a2B26f27AEb08B936331c8485a988634|Eth, Arbitrum, Optimism, Gnosis, Polygon, PolygonZkevm, Base, Linea          |Goerli, Mumbai, Sepolia|
+|Contract Name | Deployed Address                         | Chains                                                                 |Test Chains            |
+|--------------|------------------------------------------|------------------------------------------------------------------------|-----------------------|
+|PriceBulletin |0xada8c0eaba7ad722f4b5555b216f8f11a81593d8|Eth, Arbitrum, Optimism, Gnosis, BSC, PolygonZkevm, Base, Linea         |Goerli, Mumbai, Sepolia|
+|PriceBulletin |0x996d7b03d1537524bb20273713385c23944ff2ec|Polygon,                                                                |N/A  |
+
 
 ### Diamond and Facets
 
@@ -20,7 +22,7 @@ Diamond contract address: 0x8f78dc290e1701EC664909410661DC17E9c7b62b
 |RedstoneFacet      |0xbfaF4c60dc1dAE72e93acffE17410d04E713c783| Gnosis |
 |PythFacet          |0xB2c111eF9eFc9F330099370eb764Dbce40698635| Gnosis |
 |ChainlinkFacet     |0xC8Fe8E631C7BEDDFdF1DfAe11DC82d23018FDC14| Gnosis |
-|CuicaFacet         |0x3cDe0Db87ca14d82E91e030A1f5B502D27746dA4| Gnosis |
+|CuicaFacet         |0x0573ecd652e0d86cef417f8aad36297350cf1e05| Gnosis |
 
 
 ### Validate an upgrade to Price Bulletin Contract

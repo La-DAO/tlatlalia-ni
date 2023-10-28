@@ -1,23 +1,25 @@
 /* global describe it before ethers */
 require("dotenv").config();
 const { deployDiamondComplete } = require('../../scripts/hardhat/deployDiamondComplete.js')
+const { deployPriceBulletin } = require('../../scripts/hardhat/deployPriceBulletin.js')
 const { expect, assert } = require("chai")
 const { WrapperBuilder } = require("@redstone-finance/evm-connector");
 const { EvmPriceServiceConnection } = require("@pythnetwork/pyth-evm-js");
 const { ethers } = require('hardhat');
-const { CONNEXT_DATA, getSdkBaseConnext, getParams } = require('../../scripts/utilsConnext.js')
+const { CONNEXT_DATA, getSdkBaseConnext, getParams } = require('../../scripts/utilsConnext.js');
+const { setPublisherCuica } = require("../../scripts/hardhat/setPublisherCuica.js");
+const { setPublisherPriceBulletin } = require("../../scripts/hardhat/setPublisherPriceBulletin.js");
 
-const DEBUG = true
+const DEBUG = false
 
 // https://github.com/pyth-network/pyth-crosschain/tree/main/target_chains/ethereum/sdk/js#price-service-endpoints
 const connection = new EvmPriceServiceConnection(
   "https://xc-mainnet.pyth.network"
 );
 
-describe('CuicaFacet', async function () {
+describe('CuicaFacet', async () => {
   let accounts
   let diamondAddress
-  let diamondCutFacet
   let diamondLoupeFacet
   let cuicaFacet
   let redstoneFacet
@@ -25,10 +27,13 @@ describe('CuicaFacet', async function () {
   let chainlinkFacet
   let priceBulletin
   let addresses = []
+  let publisher
 
-  before(async function () {
+  before(async () => {
     accounts = await ethers.getSigners()
     diamondAddress = await deployDiamondComplete()
+    const proxyAddr = await deployPriceBulletin(diamondAddress)
+    priceBulletin = await ethers.getContractAt('PriceBulletin', proxyAddr)
     diamondCutFacet = await ethers.getContractAt('DiamondCutFacet', diamondAddress)
     diamondLoupeFacet = await ethers.getContractAt('DiamondLoupeFacet', diamondAddress)
     ownershipFacet = await ethers.getContractAt('OwnershipFacet', diamondAddress)
@@ -80,20 +85,39 @@ describe('CuicaFacet', async function () {
     tx = await cuicaFacet.aggregateAndPublishRound()
     await tx.wait()
 
-    /// Deploy and set signer in PriceBulletin
+    /// Set a test publisher in PriceBulletin
+    publisher = ethers.Wallet.createRandom()
+    await setPublisherCuica(diamondAddress, publisher.address)
+    await setPublisherPriceBulletin(priceBulletin.address, publisher.address)
+  })
 
-    const PriceBulletin = await ethers.getContractFactory("PriceBulletin")
-    priceBulletin = await PriceBulletin.deploy()
-    const signerToSet = accounts[0].address;
-    tx = await priceBulletin.setAuthorizedPublisher(signerToSet, true)
-    await tx.wait()
+  it('Should have matching structHashes from PriceBulletin and CuicaFacet', async () => {
+    const lastRoundData = await cuicaFacet.latestRoundData()
+    const structHashPriceBulletin = await priceBulletin.getStructHashRoundData(lastRoundData)
+    const structHashCuicaFacet = await cuicaFacet.getStructHashRoundData(lastRoundData)
+    const structHashOtherFunctionCuica = await cuicaFacet.getStructHashLastRoundData()
+    if (DEBUG) console.log(
+      "structHashPriceBulletin", structHashPriceBulletin,
+      "structHashCuicaFacet", structHashCuicaFacet,
+      "structHashOtherFunctionCuica", structHashOtherFunctionCuica
+    )
+    expect(structHashPriceBulletin).to.eq(structHashCuicaFacet)
+    expect(structHashCuicaFacet).to.eq(structHashOtherFunctionCuica)
+  })
+
+  it('Should have matching digests from PriceBulletin and CuicaFacet', async () => {
+    const structHash = await cuicaFacet.getStructHashLastRoundData()
+    const digestFromPriceBulletin = await priceBulletin.getHashTypedDataV4Digest(structHash)
+    const digestFromCuicaFaccet = await cuicaFacet.getHashTypedDataV4Digest(structHash)
+    if (DEBUG) console.log("digestFromPriceBulletin", digestFromPriceBulletin, "digestFromCuicaFaccet", digestFromCuicaFaccet)
+    expect(digestFromPriceBulletin).to.eq(digestFromCuicaFaccet)
   })
 
   it('Should return a relayer fee estimate', async () => {
     const structHash = await cuicaFacet.getStructHashLastRoundData()
     const digest = await priceBulletin.getHashTypedDataV4Digest(structHash)
-    const ownerSigningKey = new ethers.utils.SigningKey(process.env.TEST_PK);
-    const signedDigest = ownerSigningKey.signDigest(digest);
+    const publisherSigningKey = new ethers.utils.SigningKey(publisher.privateKey);
+    const signedDigest = publisherSigningKey.signDigest(digest);
     const { v, r, s } = ethers.utils.splitSignature(signedDigest);
 
     const lastRoundInfo = await cuicaFacet.latestRoundData()
@@ -148,8 +172,8 @@ describe('CuicaFacet', async function () {
   it('Should set price in PriceBulletin by random caller with proper signature values', async () => {
     const structHash = await cuicaFacet.getStructHashLastRoundData()
     const digest = await priceBulletin.getHashTypedDataV4Digest(structHash)
-    const ownerSigningKey = new ethers.utils.SigningKey(process.env.TEST_PK)
-    const signedDigest = ownerSigningKey.signDigest(digest)
+    const publisherSigningKey = new ethers.utils.SigningKey(publisher.privateKey)
+    const signedDigest = publisherSigningKey.signDigest(digest)
     const { v, r, s } = ethers.utils.splitSignature(signedDigest)
 
     const lastRoundInfo = await cuicaFacet.latestRoundData()
@@ -175,7 +199,7 @@ describe('CuicaFacet', async function () {
       ]
     )
 
-    await priceBulletin.connect(accounts[2]).xReceive(
+    await priceBulletin.connect(accounts[9]).xReceive(
       digest,
       0,
       ethers.constants.AddressZero,
@@ -185,11 +209,11 @@ describe('CuicaFacet', async function () {
     )
 
     const response = await priceBulletin.latestRoundData()
-    
+
     if (DEBUG) {
       console.log('cuicaFacet.lastRoundData', lastRoundInfo)
       console.log('priceBulletin.latestRoundData', response)
-    } 
+    }
 
     expect(response.roundId).to.eq(lastRoundInfo.roundId)
     expect(response.answer).to.eq(lastRoundInfo.answer)
@@ -199,9 +223,10 @@ describe('CuicaFacet', async function () {
   })
 
   it('Should propagate price through Connext', async () => {
-    const digest = await cuicaFacet.getStructHashLastRoundData()
-    const ownerSigningKey = new ethers.utils.SigningKey(process.env.TEST_PK);
-    const signedDigest = ownerSigningKey.signDigest(digest);
+    const structHash = await cuicaFacet.getStructHashLastRoundData()
+    const digest = await cuicaFacet.getHashTypedDataV4Digest(structHash)
+    const publisherSigningKey = new ethers.utils.SigningKey(publisher.privateKey);
+    const signedDigest = publisherSigningKey.signDigest(digest);
     const { v, r, s } = ethers.utils.splitSignature(signedDigest);
 
     const lastRoundInfo = await cuicaFacet.latestRoundData()
@@ -247,7 +272,7 @@ describe('CuicaFacet', async function () {
       v,
       r,
       s,
-      {value: relayerFee}
+      { value: relayerFee }
     )
     await tx.wait()
   })

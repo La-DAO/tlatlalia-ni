@@ -3,6 +3,41 @@ const yargs = require('yargs')
 const { ethers } = require('ethers')
 const { CONNEXT_DATA } = require('./utilsConnext')
 
+const PROVIDERS = {
+  ethereum: {
+    chainId: 1,
+    providers: [process.env.RPC_MAINNET],
+  },
+  polygon: {
+    chainId: 137,
+    providers: [process.env.RPC_POLYGON]
+  },
+  arbitrum: {
+    chainId: 42161,
+    providers: [process.env.RPC_ARBITRUM]
+  },
+  optimism: {
+    chainId: 10,
+    providers: [process.env.RPC_OPTIMISM]
+  },
+  gnosis: {
+    chainId: 100,
+    providers: [process.env.RPC_GNOSIS]
+  },
+  binance: {
+    chainId: 56,
+    providers: [process.env.RPC_BINANCE]
+  },
+  mumbai: {
+    chainId: 80001,
+    providers: [process.env.RPC_MUMBAI]
+  },
+  sepolia: {
+    chainId: 11155111,
+    providers: [process.env.RPC_SEPOLIA]
+  }
+}
+
 const options = yargs
   .usage("Usage: -t <test> -c <chain>")
   .option("t", { alias: "test", describe: "Boolean: true if testing", type: "bool", demandOption: false })
@@ -96,64 +131,60 @@ function getChainProvider(chainName) {
   if (!options.chain && chainName == 'localhost') {
     jsonRPC = getLocalhostJsonRPCProvider()
   } else if (chainName != 'localhost') {
-    const url = CONNEXT_DATA[chainName].providers[0]
+    const url = PROVIDERS[chainName].providers[0]
     jsonRPC =  new ethers.providers.JsonRpcProvider(url)
   } else {
-    const url = CONNEXT_DATA[options.chain].providers[0]
+    const url = PROVIDERS[options.chain].providers[0]
     jsonRPC = new ethers.providers.JsonRpcProvider(url)
   }
   if (!jsonRPC) {
-    throw `Please set 'providers' in CONNEXT_DATA for 'chainName'`
+    throw `Please set 'providers' in PROVIDERS for 'chainName'`
   }
   return jsonRPC
 }
 
 const CUICA_DATA_MAINNET = {
   ethereum: {
-    priceBulletin: "0x94C82325a2B26f27AEb08B936331c8485a988634",
+    priceBulletin: "0xada8c0eaba7ad722f4b5555b216f8f11a81593d8",
   },
   polygon: {
-    priceBulletin: "0x94C82325a2B26f27AEb08B936331c8485a988634",
+    priceBulletin: "0x996d7b03d1537524bb20273713385c23944ff2ec",
   },
   arbitrum: {
-    priceBulletin: "0x94C82325a2B26f27AEb08B936331c8485a988634",
+    priceBulletin: "0xada8c0eaba7ad722f4b5555b216f8f11a81593d8",
   },
   optimism: {
-    priceBulletin: "0x94C82325a2B26f27AEb08B936331c8485a988634",
+    priceBulletin: "0xada8c0eaba7ad722f4b5555b216f8f11a81593d8",
   },
   gnosis: {
     diamond: "0x8f78dc290e1701EC664909410661DC17E9c7b62b",
-    priceBulletin: "0x94C82325a2B26f27AEb08B936331c8485a988634",
+    priceBulletin: "0xada8c0eaba7ad722f4b5555b216f8f11a81593d8",
   },
   binance: {
-    priceBulletin: "0x94C82325a2B26f27AEb08B936331c8485a988634",
+    priceBulletin: "0xada8c0eaba7ad722f4b5555b216f8f11a81593d8",
   },
   linea: {
-    priceBulletin: "0x94C82325a2B26f27AEb08B936331c8485a988634",
+    priceBulletin: "0xada8c0eaba7ad722f4b5555b216f8f11a81593d8",
   },
   polygonzkevm: {
-    priceBulletin: "0x94C82325a2B26f27AEb08B936331c8485a988634",
+    priceBulletin: "0xada8c0eaba7ad722f4b5555b216f8f11a81593d8",
   },
   base: {
-    priceBulletin: "0x94C82325a2B26f27AEb08B936331c8485a988634",
-  }
-}
-
-const CUICA_DATA_TESTNET = {
+    priceBulletin: "0xada8c0eaba7ad722f4b5555b216f8f11a81593d8",
+  },
   goerli: {
-    priceBulletin: "0x94C82325a2B26f27AEb08B936331c8485a988634",
+    priceBulletin: "0xada8c0eaba7ad722f4b5555b216f8f11a81593d8",
   },
   sepolia: {
-    priceBulletin: "0x94C82325a2B26f27AEb08B936331c8485a988634",
+    priceBulletin: "0xada8c0eaba7ad722f4b5555b216f8f11a81593d8",
   },
   mumbai: {
-    priceBulletin: "0x94C82325a2B26f27AEb08B936331c8485a988634",
+    priceBulletin: "0xada8c0eaba7ad722f4b5555b216f8f11a81593d8",
   },
 }
 
 module.exports = {
   CUICA_DATA_MAINNET,
-  CUICA_DATA_TESTNET,
   determineTest,
   getGnosisJsonRPCProvider,
   getLocalhostJsonRPCProvider,

@@ -4,7 +4,8 @@ const {
   getLocalhostJsonRPCProvider,
   logNewLine,
   getEnvWSigner,
-  getChainProvider
+  getChainProvider,
+  CUICA_DATA_MAINNET
 } = require('../utilsCuica')
 const { routineSignLastRound } = require('./routineSignLastRound')
 
@@ -15,34 +16,31 @@ const TEST = determineTest()
  * @param {string} chainName 
  */
 async function routineUpdateBulletin(chainName='localhost') {
-  const {digest, v, r, s, callData} = await routineSignLastRound(chainName)
+  const {digest, v, r, s, info, callData} = await routineSignLastRound(chainName)
 
   const bulletinAbi = [
-    'function xReceive(bytes32, uint, address, address, uint32, bytes)',
+    'function updateBulletin(bytes)',
+    'function updateBulletinWithRewardLog(bytes)',
+    'function updateBulletinWithRewardClaim(bytes, address)',
     'function latestRoundData() view returns (uint, int256, uint, uint, uint)',
   ]
   let bulletin
   if (TEST) {
     bulletin = new ethers.Contract(
-      '0x94C82325a2B26f27AEb08B936331c8485a988634',
+      CUICA_DATA_MAINNET.gnosis.priceBulletin,
       bulletinAbi,
       getEnvWSigner(getLocalhostJsonRPCProvider())
     )
   } else {
     bulletin = new ethers.Contract(
-      '0x94C82325a2B26f27AEb08B936331c8485a988634',
+      CUICA_DATA_MAINNET[chainName].priceBulletin,
       bulletinAbi,
       getEnvWSigner(getChainProvider(chainName))
     )
   }
 
   console.log(`${logNewLine('INFO')} Updating PriceBulletin ...`)
-  const tx = await bulletin.xReceive(
-    digest,
-    0,
-    ethers.constants.AddressZero,
-    ethers.constants.AddressZero,
-    0,
+  const tx = await bulletin.updateBulletin(
     callData
   )
   await tx.wait()
@@ -54,7 +52,12 @@ async function routineUpdateBulletin(chainName='localhost') {
     updatedAt: lastRoundInfo[3],
     answeredInRound: lastRoundInfo[4]
   }
-  console.log(`${logNewLine('INFO')} Successfully updated {PriceBulletin}: latestAnswer(): ${lastRoundInfo.answer.toString()}`)
+  const updateResult = info.roundId.eq(lastRoundInfo.roundId);
+  if (updateResult) {
+    console.log(`${logNewLine('INFO')} Successfully updated {PriceBulletin}: latestAnswer(): ${lastRoundInfo.answer.toString()}`)
+  } else {
+    console.log(`${logNewLine('WARN')} !!! Failed to update {PriceBulletin}: roundId: ${info.roundId.toString()}`)
+  }
 }
 
 // We recommend this pattern to be able to use async/await everywhere
