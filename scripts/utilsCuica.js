@@ -35,6 +35,10 @@ const PROVIDERS = {
   sepolia: {
     chainId: 11155111,
     providers: [process.env.RPC_SEPOLIA]
+  },
+  goerli: {
+    chainId: 5,
+    providers: [process.env.RPC_GOERLI]
   }
 }
 
