@@ -86,7 +86,6 @@ async function routineCallbacks() {
   // Testnets
   await routineUpdateBulletin('sepolia')
   await routineUpdateBulletin('goerli')
-  await routineUpdateBulletin('mumbai')
 }
 
 scheduler()
