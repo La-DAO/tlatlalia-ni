@@ -82,6 +82,10 @@ async function routineCallbacks() {
   console.log(`${logNewLine('INFO')} Begin of scheduler callbacks ...`)
   await routineUpdateAllOracles()
   await routineUpdateBulletin('gnosis')
+  
+  // Testnets
+  await routineUpdateBulletin('sepolia')
+  await routineUpdateBulletin('goerli')
 }
 
 scheduler()
