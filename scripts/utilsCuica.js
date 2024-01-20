@@ -141,6 +141,14 @@ function determineTest() {
   }
 }
 
+function determineChain() {
+  if (!options.chain) {
+    return "localhost";
+  } else {
+    return options.chain;
+  }
+}
+
 function getChainProvider(chainName) {
   let jsonRPC;
   if (!options.chain && chainName == "localhost") {
@@ -200,6 +208,7 @@ const CUICA_DATA_MAINNET = {
 
 module.exports = {
   CUICA_DATA_MAINNET,
+  determineChain,
   determineTest,
   getGnosisJsonRPCProvider,
   getLocalhostJsonRPCProvider,
