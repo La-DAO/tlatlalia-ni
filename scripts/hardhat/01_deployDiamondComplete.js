@@ -1,9 +1,9 @@
-const { deployDiamondComplete } = require("./deployDiamondComplete")
+const { deployDiamondComplete } = require("./deployDiamondComplete");
 
 const main = async () => {
-  console.log("\n\n 📡 Deploying...\n")
-  const diamondAddress = await deployDiamondComplete()
-  console.log("Diamond " + ": deployed at", diamondAddress)
+  console.log("\n\n 📡 Deploying...\n");
+  const diamondAddress = await deployDiamondComplete();
+  console.log("Diamond " + ": deployed at", diamondAddress);
 };
 
 main()
