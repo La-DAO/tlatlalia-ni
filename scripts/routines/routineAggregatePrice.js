@@ -1,45 +1,49 @@
-const { ethers } = require('ethers')
+const { ethers } = require("ethers");
 const {
   CUICA_DATA_MAINNET,
   determineTest,
   getGnosisJsonRPCProvider,
   getLocalhostJsonRPCProvider,
   getEnvWSigner,
-  logNewLine
-} = require('../utilsCuica')
+  logNewLine,
+} = require("../utilsCuica");
 
-const TEST = determineTest()
+const TEST = determineTest();
 
 async function routineAggregatePrice() {
   const abi = [
-    'function aggregateAndPublishRound()',
-    'function latestRoundData() view returns (uint80,int,uint,uint,uint80)'
-  ]
-  let cuicaFacet
+    "function aggregateAndPublishRound()",
+    "function latestRoundData() view returns (uint80,int,uint,uint,uint80)",
+  ];
+  let cuicaFacet;
   if (TEST) {
     cuicaFacet = new ethers.Contract(
       CUICA_DATA_MAINNET.gnosis.diamond,
       abi,
       getEnvWSigner(getLocalhostJsonRPCProvider())
-    )
+    );
   } else {
     cuicaFacet = new ethers.Contract(
       CUICA_DATA_MAINNET.gnosis.diamond,
       abi,
       getEnvWSigner(getGnosisJsonRPCProvider())
-    )
+    );
   }
 
-  console.log(`${logNewLine('INFO')} Aggregating stored prices in Cuica ...`)
+  console.log(`${logNewLine("INFO")} Aggregating stored prices in Cuica ...`);
   try {
-    const tx = await cuicaFacet.aggregateAndPublishRound()
-    await tx.wait()
-    const response = await cuicaFacet.latestRoundData()
-    const formatedPrice = (response[1].toNumber() / 1e8).toFixed(8)
-    const formatedRoundId = response[0].toString()
-    console.log(`${logNewLine('WARN')} Success aggregating prices at roundId: ${formatedRoundId}, average price: ${formatedPrice}`)
+    const tx = await cuicaFacet.aggregateAndPublishRound();
+    await tx.wait();
+    const response = await cuicaFacet.latestRoundData();
+    const formatedPrice = (response[1].toNumber() / 1e8).toFixed(8);
+    const formatedRoundId = response[0].toString();
+    console.log(
+      `${logNewLine(
+        "WARN"
+      )} Success aggregating prices at roundId: ${formatedRoundId}, average price: ${formatedPrice}`
+    );
   } catch (error) {
-    console.log(`${logNewLine('WARN')} Aggregating reverted ERROR: \n${error}`)
+    console.log(`${logNewLine("WARN")} Aggregating reverted ERROR: \n${error}`);
   }
 }
 
@@ -48,10 +52,10 @@ async function routineAggregatePrice() {
 if (require.main === module) {
   routineAggregatePrice()
     .then(() => process.exit(0))
-    .catch(error => {
-      console.error(error)
-      process.exit(1)
-    })
+    .catch((error) => {
+      console.error(error);
+      process.exit(1);
+    });
 }
 
-exports.routineAggregatePrice = routineAggregatePrice
+exports.routineAggregatePrice = routineAggregatePrice;

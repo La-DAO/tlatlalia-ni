@@ -1,6 +1,7 @@
 const { ethers } = require("ethers");
 const {
   determineTest,
+  determineChain,
   getLocalhostJsonRPCProvider,
   logNewLine,
   getEnvWSigner,
@@ -15,7 +16,9 @@ const TEST = determineTest();
  * @notice Updates roundId data at {PriceBulletin}
  * @param {string} chainName
  */
-async function routineUpdateBulletin(chainName = "localhost") {
+async function routineUpdateBulletin(chainName) {
+  chainName = determineChain();
+
   const { digest, v, r, s, info, callData } = await routineSignLastRound(
     chainName
   );
