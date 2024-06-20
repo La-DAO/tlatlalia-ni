@@ -10,7 +10,7 @@ const PYTH_ABI = [
 
 const PYTH_UPDATE_PRICE_LIMIT = ethers.utils.parseUnits("1", 9);
 
-/// Main tenderly-action function
+/// Main action function
 const actionFn = async () => {
   console.log(`/n${logNewLine("INFO")} Starting Pyth price pusher ...`);
 
