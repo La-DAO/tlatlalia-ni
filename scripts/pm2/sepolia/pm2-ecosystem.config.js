@@ -12,7 +12,7 @@ module.exports = {
         LOCAL_PYTH: PYTH_ADDRESS_SEPOLIA,
         LOCAL_RPC: `${process.env.RPC_SEPOLIA}`,
       },
-      cron_restart: "0 14 * * 1-5", // This will restart the script every weekday at 2:00 PM
+      cron_restart: "0 14 * * 0-5", // This will restart the script every weekday at 2:00 PM
       cron_timezone: "America/Los_Angeles", // This will set the timezone to "America/Los_Angeles"
       autorestart: false, // This prevents PM2 from automatically restarting your script if it crashes or stops
     },
